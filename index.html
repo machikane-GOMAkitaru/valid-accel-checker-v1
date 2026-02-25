@@ -353,6 +353,7 @@ tr.invalid { opacity: .2; }
 
 <div class="app">
 
+  <!-- ━━ LEFT PANEL ━━ -->
   <div class="lpanel">
 
     <div class="psec">
@@ -469,6 +470,7 @@ tr.invalid { opacity: .2; }
 
   </div>
 
+  <!-- ━━ RIGHT PANEL ━━ -->
   <div class="rpanel">
 
     <div class="res-hd">
@@ -515,284 +517,450 @@ tr.invalid { opacity: .2; }
 
 <script>
 /* ────────────────────────────────
-   DATA (修正版: レア度5も正常に扱うための変更を反映)
+   DATA
 ──────────────────────────────── */
-// ここにSKILLSデータが入ります。既存のデータ配列をそのまま使用してください。
 const SKILLS = [{"n": "怒涛の出陣", "e": "レース終盤で追い抜くと速度が上がり加速力がちょっと上がり持久力をわずかに回復する＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&change_order_onetime<0", "qty": 1000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "異次元の逃亡者", "e": "最終コーナーで先頭だと加速力が上がりわずかに前に出る＜作戦・逃げ＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "running_style==1&is_finalcorner_random==1&order==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "天才的技巧", "e": "左右に移動するとき加速力が上がり速度が少し上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==2&is_move_lane==1@running_style==2&is_move_lane==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "怪物的コーナリング", "e": "コーナーで加速力が上がり持久力をわずかに回復する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "all_corner_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "抜群の豪脚", "e": "レース終盤に後ろの方だと加速力がすごく上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==2&phase_random==2&order_rate>50", "qty": 5000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ぶっ差してやるぜ！", "e": "ラストスパートの最中なら前が塞がれた時加速力が上がりコース取りが少しうまくなり持久力をわずかに回復する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "真剣勝負デス！", "e": "レース終盤始めの方に前方にいると加速力が上がり、視野がわずかに広くなる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "不退転の意思", "e": "レース終盤始めの方に中団以降にいると加速力が上がり、視野がわずかに広がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "勝利への咆哮", "e": "最終コーナー以降に追い抜こうとすると速度がすごく上がり加速力がちょっと上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&is_finalcorner==1&corner!=0&is_overtake==1", "qty": 1000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "豪勇無双", "e": "レース終盤に後ろの方だと加速力がすごく上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==2&phase_random==2&order_rate>50", "qty": 5000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "上弦のソムリエール", "e": "コーナーで加速力が上がりわずかに前に出る", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "all_corner_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "最前列は譲れない！", "e": "レース終盤にしばらくの間コース取りがうまくなり加速力が少し上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2", "qty": 3000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "天空落とし", "e": "下り坂で加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "モリガンの矛戟", "e": "レース終盤始めの方に前方にいると加速力が上がり、視野がわずかに広くなる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "I copy!", "e": "ラストスパートの最中なら前が塞がれた時加速力が上がりコース取りが少しうまくなり持久力をわずかに回復する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "夢叶える決意を授けましょう", "e": "下り坂で加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "憧れのシチーガール", "e": "ラストスパートの最中なら前が塞がれた時しばらくの間加速力が上がりコース取りが少しうまくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "雪国仕込みの直滑降", "e": "下り坂でしばらくの間加速力が少し上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 3000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "決意のヒーロー", "e": "下り坂で加速力が少し上がりわずかに前に出る＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "華麗なサーブ", "e": "コーナーで速度が上がり加速力がわずかに上がる＜作戦・逃げ＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "running_style==1&all_corner_random==1", "qty": 2000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "大見得切り", "e": "ラストスパートの最中なら直線で加速力が上がり視野がわずかに広くなる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "たゆまぬ努力", "e": "追い抜こうとするときしばらくの間加速力が少し上がり速度がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==3&is_overtake==1&accumulatetime>=5", "qty": 3000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "#ビューティースプリント", "e": "レース終盤に加速力が上がり視野がわずかに広がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ノンストッププリンセス", "e": "ラストスパートの最中なら前が塞がれた時加速力がすごく上がりコース取りが少しうまくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 5000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "暴れ龍", "e": "最終コーナーで外から追い抜くと速度が上がり加速力がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "running_style==3&is_finalcorner==1&corner!=0&is_behind_in==1&change_order_onetime<0", "qty": 2000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ランウェイの主役", "e": "レース終盤始めの方に中団以降にいると加速力が上がり視野がわずかに広がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "バクシン的スプリント！", "e": "レース終盤に加速力が上がり速度がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "絶対的センター！", "e": "レース終盤に前方にいると加速力がすごく上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2&order_rate<=50", "qty": 5000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ノってこ！", "e": "レース終盤始めの方で加速力が上がり持久力をわずかに回復する＜先行/差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2@running_style==2&phase_firsthalf_random==2", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "駆り立てる想い", "e": "ラストスパートの最中なら直線で加速力が上がり視野がわずかに広くなる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "起死回生の出力", "e": "レース終盤始めの方に中団以降にいるとしばらくの間加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "大輪の決意", "e": "下り坂で加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "がんばるもん！", "e": "追い抜こうとするときしばらくの間加速力が少し上がり速度がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==3&is_overtake==1&accumulatetime>=5", "qty": 3000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "風紀の登龍門", "e": "最終コーナーで外から追い抜くと速度が上がり加速力がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "running_style==3&is_finalcorner==1&corner!=0&is_behind_in==1&change_order_onetime<0", "qty": 2000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "押忍ッ！気合十分っス！", "e": "最終コーナーで後ろの方にいると速度が上がり加速力がわずかに上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "distance_type==2&is_finalcorner_random==1&order_rate>=50", "qty": 2000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "怒涛の超幸運パワー！", "e": "レース終盤で追い抜くとしばらくの間速度が上がり加速力がちょっと上がる＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&change_order_onetime<0", "qty": 1000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "弾む大地", "e": "ラストスパートの最中なら直線で加速力が上がり視野がわずかに広がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "ライバルがいるから！", "e": "レース終盤始めの方に前方にいると加速力が上がり、持久力をわずかに回復する＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "もっと冒険してみたい！", "e": "レース後半に中団にいるとしばらくの間速度が上がり、加速力がちょっと上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "running_style==3&distance_rate_after_random==50&order_rate>=30&order_rate<=80", "qty": 1000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "起死回生の一歩", "e": "レース終盤始めの方に中団以降にいるとしばらくの間加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "魅惑のシニカルガール", "e": "レース終盤以降に前が詰まるとしばらくの間加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==3&phase>=2&blocked_front_continuetime>=1", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "ノンストップエール", "e": "ラストスパートの最中なら前が塞がれた時加速力が上がりコース取りが少し上手くなり持久力をわずかに回復する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "電撃の撫で切り", "e": "レース終盤に後ろの方だとしばらくの間速度が上がり加速力がちょっと上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2&order_rate>50", "qty": 1000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "えい！えい！むん！", "e": "レース終盤で追い抜くと速度が上がり加速力がちょっと上がり持久力をわずかに回復する＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&change_order_onetime<0", "qty": 1000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "無我の境地", "e": "ラストスパートの最中なら中団以降にいると持久力をちょっと使って加速力が上がる＜差し・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==3&is_lastspurt==1&order_rate>=40", "qty": 4000.0, "dur": 15000, "rar": 6, "rarj": "進化スキル"}, {"n": "八重の向こう意気", "e": "最終コーナー以降に詰め寄られると速度がすごく上がり加速力がちょっと上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&is_finalcorner==1&overtake_target_time>=2", "qty": 1000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "記憶に刻む足取り", "e": "レース終盤が迫ったとき前方にいると速度が上がり、加速力がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==1&phase_laterhalf_random==1&order_rate<=50", "qty": 2000.0, "dur": 24000, "rar": 6, "rarj": "進化スキル"}, {"n": "常に最たる輝きを", "e": "レース終盤以降に後方で追い抜こうとすると加速力が上がり目の前のウマ娘をわずかに萎縮させる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1", "qty": 4000.0, "dur": 20000, "rar": 6, "rarj": "進化スキル"}, {"n": "質実剛健", "e": "ラストスパートの最中なら中団以降にいると持久力を少し使って加速力を上げる中山レース場なら持久力を使わずにわずかに回復する＜差し・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==3&is_lastspurt==1&order_rate>=40&track_id==10005", "track": [10005], "qty": 4000.0, "dur": 15000, "rar": 6, "rarj": "進化スキル"}, {"n": "大どんでんがえし", "e": "レース終盤始めの方で中団以降にいるとしばらくの間加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "闘魂入刀！", "e": "レース終盤突入時まで掛からずにいると終盤始めの方でしばらくの間加速力が上がる＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_rate>=66&temptation_count==0 & running_style==4&distance_type==3&phase_firsthalf_random==2", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "ヴェール揺らす春疾風", "e": "下り坂で速度が上がり加速力がわずかに上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "distance_type==1&down_slope_random==1@distance_type==2&down_slope_random==1", "qty": 2000.0, "dur": 24000, "rar": 6, "rarj": "進化スキル"}, {"n": "進め！世界マーベラス計画☆", "e": "ラストスパートの最中なら前が塞がれた時加速力が上がりコース取りが少しうまくなり、さらにゴールまで遠いとわずかに前に出る", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1&remain_distance>=600", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ワンチャンまくったる！", "e": "最終コーナーで中団以降にいると加速力が上がる、さらに東京レース場なら速度が少し上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "distance_type==3&is_finalcorner_random==1&order_rate>=40&track_id==10006", "track": [10006], "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "あたししか勝たん！", "e": "最終コーナーで中団だと速度が上がるさらに東京レース場の中距離レースなら加速力がわずかに上がる＜作戦・差し＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "running_style==3&distance_type==3&is_finalcorner_random==1&order_rate>=30&order_rate<=80&track_id==10006", "track": [10006], "qty": 2000.0, "dur": 24000, "rar": 6, "rarj": "進化スキル"}, {"n": "熱血進化ライディング！", "e": "レース終盤始めの方に中団以降にいると加速力が上がり、その後残り200m地点で速度がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "必殺！爆速スプリント！", "e": "レース終盤に加速力が上がりその後残り200m地点で速度がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "押し寄せるジュテーム", "e": "ラストスパートの最中なら直線で加速力が上がる、その後最終直線で速度がわずかに上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "蒼色革命", "e": "レース終盤始めの方に中団以降にいるとしばらくの間加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "命の火花", "e": "レース終盤始めの方で前方にいると加速力が上がり、その後残り200m地点で速度がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "Service: Transit", "e": "レース終盤始めの方に中団以降にいるとしばらくの間加速力が上がる＜差し・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "天賦の身ごなし", "e": "終盤始めの方に前の方にいると加速力が上がる、2400m～2500mのレースでスタミナが十分に高いと終盤始めの方早めにすごく上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&course_distance>=2400&course_distance<=2500&phase_firstquarter_random==2&order_rate<=50&base_stamina>=1000", "cd_ge": 2400, "cd_le": 2500, "qty": 5000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "爆走猛姫☆急転直下！！", "e": "下り坂で速度が上がり加速力がわずかに上がる＜マイル/中距離＞", "dt": [2, 3], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "distance_type==2&down_slope_random==1@distance_type==3&down_slope_random==1", "qty": 2000.0, "dur": 24000, "rar": 6, "rarj": "進化スキル"}, {"n": "心に灯す闘志", "e": "レース終盤始めの方で前方にいると加速力が上がる、その後最終直線で速度がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "ミリオンカード", "e": "レース終盤始めの方で中団以降にいると加速力が上がる、2200m～2400mのレースなら持久力を少し使い終盤始めの方早めにすごく上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "distance_type==3&course_distance>=2200&course_distance<=2400&phase_firstquarter_random==2&order_rate>=40", "cd_ge": 2200, "cd_le": 2400, "qty": 5000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "偉大なる踏破", "e": "終盤が迫ったとき前の方にいると速度が少し上がり、加速力が少し上がる2400mのレースだと速度の効果量が増える＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==3&running_style==2&phase_laterhalf_random==1&order_rate<=50&course_distance==2400", "cd_eq": [2400], "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "万里飛び越えソイヤッ！", "e": "ラストスパートの最中なら直線で前の方だと加速力が上がる、その後最終直線でわずかに前に出る＜逃げ・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==1&is_lastspurt==1&corner==0&order<=3", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "大掃除上手", "e": "レース終盤始めの方に中団以降にいるとしばらくの間加速力が上がる＜差し・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "天来のリトルシスター", "e": "下り坂で速度が上がり加速力がわずかに上がる＜マイル/中距離＞", "dt": [2, 3], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "distance_type==2&down_slope_random==1@distance_type==3&down_slope_random==1", "qty": 2000.0, "dur": 24000, "rar": 6, "rarj": "進化スキル"}, {"n": "ハイソ・メンタリティ！", "e": "レース後半に中団にいるとしばらくの間速度が上がり、加速力がちょっと上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "running_style==3&distance_rate_after_random==50&order_rate>=30&order_rate<=80", "qty": 1000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "迫りくる宵闇", "e": "ラストスパートの最中なら直線で加速力が上がる、その後最終直線で速度がわずかに上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "曲線に舞う深雪", "e": "コーナーで加速力が上がり速度がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "all_corner_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "必殺・雷電キーック！", "e": "レース終盤に後ろの方だと速度が上がり、加速力がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2&order_rate>50", "qty": 2000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "赫焉", "e": "終盤以降の最終コーナーまたは中山レース場の終盤以降のコーナーで中団以降だと加速力が上がる、その後最終直線で速度がわずかに上がる＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&track_id!=10005&running_style==4&phase>=2&is_finalcorner==1&corner!=0&order_rate>=40@distance_type==3&track_id==10005&running_style==", "track": [10005], "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "情報強者", "e": "レース序盤にスキルを多く発動すると加速力が上がる、マイルか中距離レースの場合は効果が増える", "dt": [2, 3], "gt": [1, 2], "tm": {"type": "exclude", "subtype": "phase0_count"}, "raw": "distance_type==2&activate_count_start>=3@distance_type==3&activate_count_start>=3", "qty": 5000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ぜーったい負けられない！", "e": "レース終盤始めの方で前方にいると加速力が上がり、その後残り200m地点で速度がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "理想へ向かう覚悟", "e": "レース終盤始めの方で前方にいると加速力が上がるその後残り300mを切っているとき速度がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "決意の根性娘", "e": "下り坂で加速力が少し上がるその後残り300mを切っているとき速度がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "霹靂閃電", "e": "レース終盤始めに追い抜こうとするときまたはレース終盤始めの方で加速力が上がる＜差し・マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&distance_type==2&phase>=2&is_overtake==1&distance_rate<=75@running_style==3&distance_type==2&phase_firsthalf_random==2", "qty": 4000.0, "dur": 20000, "rar": 6, "rarj": "進化スキル"}, {"n": "将の疾刃", "e": "終盤以降の最終コーナーで中団以前にいる時ゴールまで遠いと加速力が上がるその後最終盤始めの方にラストスパートで速度がわずかに上がる＜先行/差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 600}, "raw": "running_style==2&phase>=2&is_finalcorner==1&corner!=0&remain_distance>=600&order_rate<=70@running_style==3&phase>=2&is_finalcorner==1&corner!=0&remain", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "Enjoy the Flight", "e": "レース終盤始めの方で前方にいると加速力が上がり、その後残り200m地点で速度がわずかに上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "シルフィード・マギア", "e": "レース終盤始めの方で加速力が上がる2200mのレースなら持久力を少し使い終盤始めの方早めにすごく上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "course_distance==2200&running_style==4&phase_firstquarter_random==2", "cd_eq": [2200], "qty": 5000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "遮るものはない", "e": "レース終盤に加速力が上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2@distance_type==2&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "やばしやばし！", "e": "レース終盤始めの方で中団以降にいると加速力が上がるその後残り300mを切っているとき速度がわずかに上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "闘叫の鬼", "e": "東京レース場ならレース終盤始めの方にしばらくの間前に出て、加速力がちょっと上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&track_id==10006", "track": [10006], "qty": 1000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "お待ちどおさま！", "e": "レース終盤以降に後方で追い抜こうとすると加速力が上がる、その後残り200mを切っているとき速度がわずかに上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1", "qty": 4000.0, "dur": 20000, "rar": 6, "rarj": "進化スキル"}, {"n": "耕せ！開墾スプリント", "e": "レース終盤に加速力が上がるその後残り200mを切っているとき速度がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "曲線のグランシェフ", "e": "コーナーで加速力が上がるその後残り200mを切っているとき速度がわずかに上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "distance_type==1&all_corner_random==1@distance_type==2&all_corner_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "山頂でイタダキマス", "e": "レース後半の上り坂で加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_up_later_half"}, "raw": "up_slope_random_later_half==1&running_style==2", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "勝ちたいんだもん！", "e": "レース終盤にコース取りがすごくうまくなり加速力が少し上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase_random==2", "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "突き進め北の海", "e": "レース終盤始めの方で加速力が上がる、1800m以上のレースなら終盤始めの方早めに加速力が上がる＜先行・ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "fq"}, "raw": "ground_type==2&running_style==2&phase_firstquarter_random==2&course_distance>=1800", "cd_ge": 1800, "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "――お退きなさい", "e": "2000m以上のレースで、終盤始めの早めに前が塞がれた時または終盤始めの方早めに加速力が上がりコース取りが少しうまくなる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&course_distance>=2000&infront_near_lane_time>=1&phase_firstquarter==2@running_style==2&course_distance>=2000&phase_firstquarter_rando", "cd_ge": 2000, "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "フィナーレの先頭へ", "e": "レース終盤始めの方に中団以降にいると加速力が上がり、その後残り200m地点で速度がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "オリファントの轟雷", "e": "レース終盤以降に追い抜こうとすると加速力が上がるスキル発動時、最終コーナーにいるとすごく上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==1&phase>=2&is_overtake==1&is_finalcorner==1&corner!=0@distance_type==2&phase>=2&is_overtake==1&is_finalcorner==1&corner!=0", "qty": 5000.0, "dur": 20000, "rar": 6, "rarj": "進化スキル"}, {"n": "お先に☆テールウィンド", "e": "ラストスパートの最中なら直線で前の方だと加速力が上がる、先頭だと持久力を少し使って効果時間が2倍になる＜逃げ・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==1&is_lastspurt==1&corner==0&order==1", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "ミストラルに乗って", "e": "終盤の直線で加速力が上がり速度がわずかに上がる、東京レース場なら終盤始めの方の直線で加速力が上がり速度がわずかに上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "straight_random"}, "raw": "phase_first_half_straight_random==2&track_id==10006&distance_type==1@phase_first_half_straight_random==2&track_id==10006&distance_type==2", "track": [10006], "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "シミュレートグラス・オン", "e": "レース終盤始めの方早めに持久力を少し使って加速力がものすごく上がる＜先行・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==4&phase_firstquarter_random==2", "qty": 6000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "さァさ、お立ち合い！", "e": "レース終盤始めの方早めに加速力が上がる、スキル発動時中団以降にいるとすごく上がる＜追込・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==4&distance_type==4&phase_firstquarter_random==2&order_rate>=40", "qty": 5000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "伏竜は目覚めて", "e": "終盤以降の最終コーナーで3番手以内にいると加速力が上がり前に出る＜逃げ・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&running_style==1&phase>=2&is_finalcorner==1&corner!=0&order<=3", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "覚えていてくださいね？", "e": "レース終盤始めの方早めに前方にいると加速力が上がる＜逃げ・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==1&distance_type==1&phase_firstquarter_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "幾星霜が導く一手", "e": "終盤以降の最終コーナーで中団以前にいる時ゴールまで遠いと加速力が上がるその後最終直線でわずかに前に出る＜先行/差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 600}, "raw": "running_style==2&phase>=2&is_finalcorner==1&corner!=0&remain_distance>=600&order_rate<=70@running_style==3&phase>=2&is_finalcorner==1&corner!=0&remain", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "下弦の雪月花", "e": "最終コーナーで加速力が上がる芝のレースならしばらくの間加速力が上がる＜マイル＞", "dt": [2], "gt": [1], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "ground_type==1&distance_type==2&is_finalcorner_random==1", "qty": 4000.0, "dur": 40000, "rar": 6, "rarj": "進化スキル"}, {"n": "我が意、即ち天の理なり", "e": "2000m以上のレースならラストスパートの最中に加速力が上がる＜追込・芝＞", "dt": [1, 2, 3, 4], "gt": [1], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&course_distance>=2000&is_lastspurt==1&ground_type==1", "cd_ge": 2000, "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "万哩へ響け大歓声", "e": "終盤始めの方で中団以降にいると持久力を少し使って加速力が上がる、マイルレースだと終盤始めの方早めに持久力を少し使って加速力がすごく上がる＜芝＞", "dt": [2], "gt": [1], "tm": {"type": "random", "subtype": "fq"}, "raw": "distance_type==2&phase_firstquarter_random==2&order_rate>=40&ground_type==1", "qty": 5000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "韋駄天ノ襲脚", "e": "ラストスパートの最中なら直線で加速力が上がる、その後最終コーナーに入るとわずかに前に出る＜追込・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0&distance_type==4", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "Beat the Stars", "e": "レース終盤始めの方早めに中団にいると前に出る、さらに「稍重」「重」「不良」のバ場状態なら加速力がちょっと上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "ground_condition==2@ground_condition==3@ground_condition==4 & distance_type==3&phase_firstquarter_random==2&order_rate>=30&order_rate<=80", "gc": [2, 3, 4], "qty": 1000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "猛き獣は太陽に吼える", "e": "3200m以上のレースならレース終盤に加速力が上がる、その後最終直線で速度がわずかに上がる＜先行・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&running_style==2&phase==2&course_distance>=3200", "cd_ge": 3200, "qty": 4000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "『お姉ちゃん、だもの』", "e": "レース序盤にスキルを発動すると加速力が上がる、マイルレースならすごく上がる", "dt": [2], "gt": [1, 2], "tm": {"type": "exclude", "subtype": "phase0_count"}, "raw": "distance_type==2&activate_count_start>=1", "qty": 5000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "盛り上げ上手", "e": "レース終盤始めの方早めに中団以降にいると加速力がわずかに上がり少し前に出る＜差し・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "distance_type==3&running_style==3&phase_firstquarter_random==2&order_rate>=40", "qty": 2000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "栄華の歩み、誰ぞ遮る", "e": "レース終盤が迫ったとき速度と加速力が少し上がる＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==3&running_style==2&phase_laterhalf_random==1", "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "創世の一頁", "e": "2000m～2500mのレースで、終盤始めの早めに追い抜こうとするときまたは終盤始めの方早めに加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&course_distance>=2000&course_distance<=2500&is_overtake==1&phase_firstquarter==2@running_style==2&course_distance>=2000&course_distan", "cd_ge": 2000, "cd_le": 2500, "qty": 4000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "誓いの一振り", "e": "レース終盤始めの方で加速力が上がり少し前に出る＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&running_style==4&phase_firsthalf_random==2", "qty": 4000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "ティアラ・ダイブ！", "e": "下り坂で加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "ぜーったい譲って♡", "e": "終盤始めの方で前方にいると加速力がすごく上がる、2200mのレースなら持久力を少し使い終盤始めの方早めにすごく上がる＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==3&order_rate<=50&phase_firstquarter_random==2&course_distance==2200", "cd_eq": [2200], "qty": 5000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "いつもの僕じゃないから！", "e": "ラストスパートの最中なら直線で加速力がすごく上がり、わずかに前に出る＜先行・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==2&is_lastspurt==1&corner==0", "qty": 5000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "ノクス・ルミナ", "e": "終盤始めの方早めに加速力が少し上がるさらに2000mのレースなら持久力を少し使って少し前に出る＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "distance_type==3&running_style==4&phase_firstquarter_random==2&course_distance==2000", "cd_eq": [2000], "qty": 3000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "まさかここから大逆転！？", "e": "レース終盤始めの方早めに中団以降にいると加速力が少し上がる、さらにスキル発動時下り坂にいて余力十分ならすごく前に出る＜差し・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "lastspurt==2&running_style==3&distance_type==3&phase_firstquarter_random==2&order_rate>=40&slope==2", "qty": 3000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "ベッコベコに凹ます！", "e": "レース終盤始めの方で前方にいると加速力が上がる、1800m以下のレースなら終盤始めの方早めに加速力が上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "fq"}, "raw": "order_rate<=50&ground_type==2&phase_firstquarter_random==2&course_distance<=1800", "cd_le": 1800, "qty": 4000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "満たせ☆ぱんぷきんパワー！", "e": "レース終盤始めの方で前方にいると加速力が上がる、短距離かマイルレースならすごく上がる＜作戦・先行＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&distance_type==1&phase_firsthalf_random==2&order_rate<=50@running_style==2&distance_type==2&phase_firsthalf_random==2&order_rate<=50", "qty": 5000.0, "dur": 18000, "rar": 6, "rarj": "進化スキル"}, {"n": "ここ、カマしどきっしょ！", "e": "2000m以上のレースなら終盤以降の最終コーナーで加速力がすごく上がる長距離レースでは効果が変わりしばらくの間少し前に出る＜先行/差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "running_style==2&phase>=2&is_finalcorner==1&corner!=0&course_distance>=2000&distance_type!=4@running_style==3&phase>=2&is_finalcorner==1&corner!=0&cou", "cd_ge": 2000, "qty": 5000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "Ignite this Stage", "e": "レース終盤始めの方に前に出るさらに中距離レースなら加速力がわずかに上がる＜マイル/中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2", "qty": 2000.0, "dur": 24000, "rar": 6, "rarj": "進化スキル"}, {"n": "勝ち筋ドミネーション", "e": "レース序盤にスキルを多く発動すると加速力が上がる、出遅れていない場合その後ラストスパートの最中なら加速力がちょっと上がる＜マイル/中距離＞", "dt": [2, 3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "activate_count_start>=3&distance_type==2@activate_count_start>=3&distance_type==3", "qty": 4000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "誠心たる光燿", "e": "マイルレースの終盤始めの方または中距離レースの終盤以降の最終コーナーで加速力が上がり少し前に出る＜追込・芝＞", "dt": [2, 3], "gt": [1], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==2&running_style==4&ground_type==1&phase_firsthalf_random==2@distance_type==3&running_style==4&ground_type==1&phase>=2&is_finalcorner==1", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "未来へ続く放物線", "e": "最終コーナーで加速力が少し上がるさらに芝のレースなら少し前に出る＜マイル＞", "dt": [2], "gt": [1], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "ground_type==1&distance_type==2&is_finalcorner_random==1", "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "陰りなき王道", "e": "レース終盤に追い抜こうとすると前に出て加速力がわずかに上がる＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&is_overtake==1", "qty": 2000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "怒涛のラッキー大猛進！", "e": "終盤に追い抜こうとすると加速力がわずかに上がる、その後ラストスパートの最中に追い抜こうとするとしばらくの間速度が上がる＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&is_overtake==1", "qty": 2000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "緊急重版", "e": "2000m以上のレースならレース終盤始めの方早めに前方にいると加速力が上がる、さらにスキル発動時2番手以内だと少し前に出る＜作戦・逃げ＞ ", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==1&phase_firstquarter_random==2&order<=2&course_distance>=2000", "cd_ge": 2000, "qty": 4000.0, "dur": 12000, "rar": 6, "rarj": "進化スキル"}, {"n": "Sheep Stampede!", "e": "レース終盤始めの早めに先頭にいるか追い抜こうとするとき、または終盤始めの方早めに加速力が上がる＜先行・マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==2 & phase_firstquarter==2&order==1@phase_firstquarter==2&is_overtake==1@phase_firstquarter_random==2", "qty": 4000.0, "dur": 15000, "rar": 6, "rarj": "進化スキル"}, {"n": "巧みなるファントム", "e": "レース後半のコーナーで左右に移動するとき加速力が少し上がりわずかに前に出る＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_type==3&running_style==2 & distance_rate>=50&corner!=0&is_move_lane==1@distance_rate>=50&corner!=0&is_move_lane==2", "qty": 3000.0, "dur": 30000, "rar": 6, "rarj": "進化スキル"}, {"n": "踊る脚色", "e": "終盤始めの早めに直線に入ったときまたは終盤始めの方早めに加速力が上がる＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "distance_type==3&running_style==4&phase_firstquarter==2&corner==0@distance_type==3&running_style==4&phase_firstquarter_random==2", "qty": 4000.0, "dur": 9000, "rar": 6, "rarj": "進化スキル"}, {"n": "シューティングスター", "e": "レース終盤以降に前方で相手を抜くと勢いに乗って前に出て加速力がちょっと上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&order>=1&order_rate<=50&change_order_onetime<0", "qty": 1000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "紅焔ギア/LP1211-M", "e": "最終コーナー以降で前の方にいるとギアを変えて加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "is_finalcorner==1&order<=5&order_rate<=50", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "ヴィクトリーショット！", "e": "最終コーナー後半で好位置にいると弾みを付けて加速力を上げ続ける", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_lh"}, "raw": "is_finalcorner_laterhalf==1&corner!=0&order>=3&order_rate<=40", "qty": 4000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "#LookatCurren", "e": "レース中間付近で好位置にいる時に追い抜くと勢いづき進出を開始する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_range", "range": [50, 65]}, "raw": "distance_rate>=50&distance_rate<=65&order>=2&order_rate<=50&change_order_onetime<0", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "アングリング×スキーミング", "e": "レース終盤以降のコーナーで先頭にいるとこれ幸いと加速力を上げる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&corner!=0&order==1", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "コンドル猛撃波", "e": "最終コーナーで中団から前を狙う時魂を燃え滾らせて加速力を上げる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "is_finalcorner==1&corner!=0&is_overtake==1&order>=4&order_rate<=75", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "I Never Goof Up!", "e": "レース終盤以降に追い抜くとあきらめない心を発揮して前を目指す", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&change_order_onetime<0", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "ぐるぐるマミートリック♡", "e": "最終直線を好位置で走行中前のウマ娘との距離が近いと抜け出しやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalstraight", "fixed_point": "finalstraight"}, "raw": "is_last_straight==1&order<=4&bashin_diff_infront<=1", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "GET DOWN", "e": "最終コーナー走行中に中団で競り合うと抜け出しやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "is_finalcorner==1&corner!=0&order_rate>=30&order_rate<=70&blocked_side_continuetime>=2", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "彼方、その先へ…", "e": "掛からず、中盤の最終コーナーか終盤以降の最終コーナーではないコーナーを中団で進むと奮い立ち加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&corner!=0&is_finalcorner==0&temptation_count==0&order_rate>=50&order_rate<=70@phase==1&corner!=0&is_finalcorner==1&temptation_count==0&order_", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "聖夜のミラクルラン！", "e": "スキルで持久力を3回以上回復するとレース後半で勝利に向かい呼吸を整えて力強く踏み込んでいく", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "activate_count_heal>=3&distance_rate>=50", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "白い稲妻、見せたるで！", "e": "レース後半の直線で好位置にいるまたは中団から前を狙うと稲妻の如く駆けて行く", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_rate>=50&corner==0&order_rate>=70&order_rate<=75&is_overtake==1@distance_rate>=50&corner==0&order_rate<=30&order_rate>=20", "qty": 1000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "勝ち鬨ワッショイ！", "e": "前方にいるとき、レース後半の第3コーナーで速度を少し上げる、または終盤の向正面で力強く前に踏み込む", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase==2&straight_front_type==2&order<=2", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "Do Ya Breakin!", "e": "終盤以降の直線で前方にいると意気揚々と速度を上げる、さらにそこが向正面の場合加速力をわずかに上げる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&corner==0&order<=2&straight_front_type==2", "qty": 2000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "つぼみ、ほころぶ時", "e": "レース中盤のコーナーで競り合っていた場合終盤以降かつ最終コーナー半ば以降に好位置にいると加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "phase==1&blocked_side_continuetime>=2&corner!=0 & phase>=2&is_finalcorner_laterhalf==1&order>=3&order_rate<=40@phase>=2&is_finalcorner==1&corner==0&or", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "轟！トレセン応援団！！", "e": "レース前半、掛からず最後方付近に控え続けていると、最終直線で気合を爆発させて加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalstraight", "fixed_point": "finalstraight"}, "raw": "distance_rate>=50&order_rate_out70_continue==1&temptation_count==0 & is_last_straight==1", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "Best day ever", "e": "終盤以降かつ最終コーナー以降に好位置にいると速度が上がるさらにゴールまで遠いと最高の走りで加速力がちょっと上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 401}, "raw": "remain_distance>=401&phase>=2&is_finalcorner==1&order_rate>=20&order_rate<=40", "qty": 1000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "One True Color", "e": "残り350mを切って前の方で後ろのウマ娘との距離が近いと譲らぬ思いで抜け出しやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_lte", "rv": 350}, "raw": "remain_distance<=350&order_rate<=40&order_rate>=20&bashin_diff_behind<=1", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "熱血！！風紀アタック", "e": "終盤以降の最終コーナー以降に後方から迫ると短い間加速力がちょっと上がる効果中に追い抜くと3回まで効果と時間が増える", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "phase>=2&order_rate>=50&is_finalcorner==1&bashin_diff_infront<=1", "qty": 1000.0, "dur": 20000, "rar": 5, "rarj": "固有スキル"}, {"n": "理運開かりて翔る", "e": "終盤が迫ったときどこかで速度を少し上げ、さらに能力を引き出すスキルの発動数に応じて速度と加速力を上げる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "phase_laterhalf_random==1", "qty": 500.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "Silent letter", "e": "残り400mを切って前の方で近寄られるとファンの心に残る走りで抜け出しやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_lte", "rv": 400}, "raw": "remain_distance<=400&order<=2&overtake_target_time>=1", "qty": 3000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "風光る", "e": "レース前半で控え、最終コーナー後半に前の方だと長時間加速力をちょっと上げ続ける、2番手なら効果が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_lh"}, "raw": "distance_rate>=50&order_rate_out20_continue==1 & is_finalcorner_laterhalf==1&distance_diff_rate<=50&order==2", "qty": 2000.0, "dur": 80000, "rar": 5, "rarj": "固有スキル"}, {"n": "Into High Gear!", "e": "レース中盤以降の下り坂で中団だと坂を下った後少しの間速度を上げる東京レース場ならさらにギアを上げる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down"}, "raw": "phase>=1&slope==2&order_rate>=50&order_rate<=80&track_id==10006 & slope==0@slope==1", "track": [10006], "qty": 1000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "あっぱれ大盤振る舞い！", "e": "終盤以降のコーナーで前方にいる時ゴールまでが遠いと少しの間前に出て加速力がちょっと上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 600}, "raw": "phase>=2&corner!=0&remain_distance>=600&order<=3", "qty": 1000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "Ding Dong Boo", "e": "追い比べをしたとき、速度が少し上がるさらにダートレースでは嚙みつかんばかりの気迫で加速力が上がる", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "fixed", "subtype": "finalstraight", "fixed_point": "finalstraight"}, "raw": "compete_fight_count>0&ground_type==2", "qty": 4000.0, "dur": 50000, "rar": 5, "rarj": "固有スキル"}, {"n": "CHERRY☆スクランブル", "e": "残り400m地点で3番手以内にいると短い間加速力がちょっと上がるレース中盤に連続して競り合い続けた時間が長いほど効果と時間が増える", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_lte", "rv": 401}, "raw": "order<=3&remain_distance<=401&remain_distance>=399", "qty": 1000.0, "dur": 10000, "rar": 5, "rarj": "固有スキル"}, {"n": "ごろりん！？パワードライブ", "e": "レース後半のコーナーで中団にいると残り持久力に応じた時間速度が少し上がる、さらに中距離レースでは加速力がちょっと上がる", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_rate>=50&corner!=0&order_rate>=40&order_rate<=80&distance_type==3", "qty": 1000.0, "dur": 20000, "rar": 5, "rarj": "固有スキル"}, {"n": "セイリオス", "e": "残り800m地点で中団にいると加速力がわずかに上がる、2400ｍのレースで人気が高いとすごく上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "remain", "fixed_point": "remain", "rv": 800}, "raw": "remain_distance>=799&remain_distance<=801&order_rate>=30&order_rate<=60&course_distance==2400&popularity<=3", "cd_eq": [2400], "qty": 5000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "夏空ハレーション", "e": "後半のコーナーで好位置だと少しの間速度がすごく上がるさらに中山レース場ならスピードの能力に応じて加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_rate>=50&corner!=0&order_rate>=20&order_rate<=50&track_id==10005", "track": [10005], "qty": 500.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "jingle all the way", "e": "レース中間付近以降の直線で先頭だと長めに速度を少し上げ続ける、さらに中山レース場で「大逃げ」が発動していると長めに加速力をちょっと上げ続ける", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 40}, "raw": "distance_rate>=40&corner==0&order==1&track_id==10005&is_used_skill_id==202051", "track": [10005], "qty": 1000.0, "dur": 70000, "rar": 5, "rarj": "固有スキル"}, {"n": "Guiding Sea", "e": "残り800m地点で中団だと少しの間少し前に出て加速力がちょっと上がるさらに根幹距離のレースで後方だと加えて加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "remain", "fixed_point": "remain", "rv": 800}, "raw": "remain_distance>=799&remain_distance<=801&is_basis_distance==1&order_rate>=70&order_rate<=80", "qty": 1000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "Overdrive Speed", "e": "レース終盤以降のコーナーで後方にいるときゴールまで遠いと少しの間前に出る中山レース場の中距離レースなら効果が増えてさらに加速力がちょっと上がる", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 600}, "raw": "phase>=2&corner!=0&remain_distance>=600&order_rate>=50&distance_type==3&track_id==10005", "track": [10005], "qty": 1000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "Crystal Mist", "e": "最終コーナー以降で中団以降にいると加速力が上がる、2400mのレースならすごく上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "running_style==4&is_finalcorner==1&order_rate>=40&course_distance==2400", "cd_eq": [2400], "qty": 5000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "Romantic Horizon", "e": "終盤が迫ったどこかで前方にいると速度を少し上げ続けるさらに3番手以内なら加速力をちょっと上げ続ける＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==3&phase_laterhalf_random==1&order<=3", "qty": 1000.0, "dur": 60000, "rar": 5, "rarj": "固有スキル"}, {"n": "レジェンダリーアクセル", "e": "ラストスパートの最中なら加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "is_lastspurt==1", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "ずっとずっと輝いて", "e": "トリプルティアラのコースだと終盤以降のコーナーで少しの間少し前に出るさらにそこが下り坂なら加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1], "tm": {"type": "slope_down"}, "raw": "track_id==10009&course_distance==1600@track_id==10008&course_distance==2000@track_id==10006&course_distance==2400 & ground_type==1&phase>=2&corner!=0&", "track": [10006, 10008, 10009], "cd_eq": [1600, 2000, 2400], "qty": 2000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "スカーレットリリィの高揚", "e": "残り300m地点で中団にいると速度がすごく上がる、または中距離レースで「衝動」が発動していると終盤以降のコーナーで順位によらず加速力が上がる", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==3&is_used_skill_id==203781&phase>=2&corner!=0", "qty": 4000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "Punkish Bite", "e": "レース終盤以降のコーナーで少しの間少し前に出る、ダートレースなら効果が増えてさらに加速力がちょっと上がる＜逃げ/先行＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==1&phase>=2&corner!=0&ground_type==2@running_style==2&phase>=2&corner!=0&ground_type==2", "qty": 1000.0, "dur": 40000, "rar": 5, "rarj": "固有スキル"}, {"n": "ヤバ技☆ジャグルビート", "e": "中盤以降下り坂で中団だと下った後長めに速度をわずかに、加速力をほんのちょっと上げ続ける、効果中スキル発動3回まで加速力が増える＜中距離/長距離＞", "dt": [3, 4], "gt": [1, 2], "tm": {"type": "slope_down"}, "raw": "phase>=1&slope==2&order_rate>=30&order_rate<=70 & slope==0&distance_type==3@slope==1&distance_type==3@slope==0&distance_type==4@slope==1&distance_type", "qty": 500.0, "dur": 70000, "rar": 5, "rarj": "固有スキル"}, {"n": "ブリリアント・レッドエース", "e": "レース後半に前の方で1番になる力を発揮する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_rate>=50&order==1&bashin_diff_behind<=1@distance_rate>=50&order==2&is_overtake==1", "qty": 3000.0, "dur": 50000, "rar": 4, "rarj": "固有スキル"}, {"n": "プランチャ☆ガナドール", "e": "最終直線で余力を持って前にいるとより優位を保ちやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalstraight", "fixed_point": "finalstraight"}, "raw": "is_last_straight==1&hp_per>=30&order<=2", "qty": 3000.0, "dur": 50000, "rar": 4, "rarj": "固有スキル"}, {"n": "ひらめき☆ランディング", "e": "最終コーナー以降に前の方で競り合うと抜け出しやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "is_finalcorner==1&blocked_side_continuetime>=2&order<=3", "qty": 3000.0, "dur": 50000, "rar": 4, "rarj": "固有スキル"}, {"n": "レッツ・アナボリック！", "e": "レース終盤以降のコーナーで中団にいると前の位置につこうとして加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&corner!=0&order_rate>=65&order_rate<=70", "qty": 4000.0, "dur": 40000, "rar": 4, "rarj": "固有スキル"}, {"n": "来ます来てます来させます！", "e": "レース終盤以降に3番手以降で前方が詰まるとお告げの力で道を切り開く", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&order>=3&blocked_front==1", "qty": 1000.0, "dur": 50000, "rar": 4, "rarj": "固有スキル"}, {"n": "レッドエース", "e": "レース後半に前の方で1番になる力をわずかに発揮する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_rate>=50&order==1&bashin_diff_behind<=1@distance_rate>=50&order==2&is_overtake==1", "qty": 2000.0, "dur": 50000, "rar": 3, "rarj": "固有スキル（下位）"}, {"n": "熱血☆アミーゴ", "e": "最終直線で余力を持って前にいるとわずかに優位を保ちやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalstraight", "fixed_point": "finalstraight"}, "raw": "is_last_straight==1&hp_per>=30&order<=2", "qty": 2000.0, "dur": 50000, "rar": 3, "rarj": "固有スキル（下位）"}, {"n": "勝利のキッス☆", "e": "最終コーナー以降に前の方で競り合うとわずかに抜け出しやすくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "is_finalcorner==1&blocked_side_continuetime>=2&order<=3", "qty": 2000.0, "dur": 50000, "rar": 3, "rarj": "固有スキル（下位）"}, {"n": "燃えろ筋肉！", "e": "レース終盤以降のコーナーで中団にいると前の位置につこうとして加速力が少し上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&corner!=0&order_rate>=65&order_rate<=70", "qty": 3000.0, "dur": 40000, "rar": 3, "rarj": "固有スキル（下位）"}, {"n": "来てください来てください！", "e": "レース終盤以降に3番手以降で前方が詰まるとお告げの力で少し道を切り開く", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&order>=3&blocked_front==1", "qty": 1000.0, "dur": 50000, "rar": 3, "rarj": "固有スキル（下位）"}, {"n": "曲線のソムリエ", "e": "華麗なコーナーワークで加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "all_corner_random==1", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "一陣の風", "e": "直線で加速力が上がり速度がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "straight_random"}, "raw": "straight_random==1", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "ノンストップガール", "e": "ラストスパートの最中なら前が塞がれた時加速力が上がりコース取りが少しうまくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "逃亡者", "e": "最終コーナーで先頭だと加速力が上がる＜作戦・逃げ＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "running_style==1&is_finalcorner_random==1&order==1", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "乗り換え上手", "e": "レース終盤始めの方に中団以降にいると加速力が上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "迫る影", "e": "ラストスパートの最中なら直線で加速力が上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 2, "rarj": "金スキル"}, {"n": "スプリントターボ", "e": "レース終盤に加速力が上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "電撃の煌めき", "e": "レース終盤に後ろの方だと速度が上がり、加速力がちょっと上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2&order_rate>50", "qty": 1000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "豪脚", "e": "レース終盤に後ろの方だと加速力が上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==2&phase_random==2&order_rate>50", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "勝利への執念", "e": "最終コーナー以降に詰め寄られると速度が上がり、加速力がちょっと上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&is_finalcorner==1&overtake_target_time>=2", "qty": 1000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "プランX", "e": "レース終盤が迫ったとき前の方にいると加速力が上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==1&phase_laterhalf_random==1&order>=2&order_rate<=50", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "アクセル全開！", "e": "レース後半に追い抜くと加速力が上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_type==2&distance_rate>=50&change_order_onetime<0", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "怒涛の追い上げ", "e": "レース終盤で追い抜くと速度が上がり加速力がちょっと上がる＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&change_order_onetime<0", "qty": 1000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "再燃焼", "e": "レース終盤に持久力を少し使って加速力を上げる＜作戦・逃げ＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==1&phase_random==2", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "技巧派", "e": "左右に移動するとき加速力が少し上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==2&is_move_lane==1@running_style==2&is_move_lane==2", "qty": 3000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "決意の直滑降", "e": "下り坂で加速力が少し上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 3000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "努力家", "e": "追い抜こうとするときしばらくの間加速力が少し上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==3&is_overtake==1&accumulatetime>=5", "qty": 3000.0, "dur": 40000, "rar": 2, "rarj": "金スキル"}, {"n": "アオハル燃焼・力", "e": "レース終盤にアオハル魂が燃えレース中のチームメンバーのパワー合計が高いほど加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase_random==2", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "アオハル燃焼・根", "e": "レース終盤にアオハル魂が燃えレース中のチームメンバーの根性合計が高いほど脚に力強さが宿る", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase_random==2", "qty": 3000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "狙うは最前列！", "e": "レース終盤にコース取りが上手くなり加速力が少し上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2", "qty": 3000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "一番星", "e": "レース後半に呼吸を整え前へ踏み込む育成で重ねた勝利の数だけ効果が高まる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "distance_rate_after_random==50", "qty": 3000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "起死回生", "e": "レース終盤始めの方で中団以降にいると加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "鍔迫り合い", "e": "レース終盤始めの方で前方にいると加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "大胆不敵", "e": "レース後半に中団にいると速度が上がり加速力がちょっと上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "running_style==3&distance_rate_after_random==50&order_rate>=30&order_rate<=80", "qty": 1000.0, "dur": 24000, "rar": 2, "rarj": "金スキル"}, {"n": "目指せセンター！", "e": "レース終盤に前方にいると加速力が上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2&order_rate<=50", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "爆走モード！", "e": "レース終盤に中団以降にいると加速力が上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2&order_rate>=50", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "キミと勝ちたい", "e": "レース後半に中団以前だと速度が上がり加速力がわずかに上がるファンが多いほど効果が高まる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "distance_rate_after_random==50&order_rate<=65", "qty": 2000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "電光石火", "e": "レース終盤以降に後方で追い抜こうとすると加速力が上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1", "qty": 4000.0, "dur": 20000, "rar": 2, "rarj": "金スキル"}, {"n": "無我夢中", "e": "ラストスパートの最中なら中団以降にいると持久力を少し使って加速力が上がる＜差し・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==3&is_lastspurt==1&order_rate>=40", "qty": 4000.0, "dur": 15000, "rar": 2, "rarj": "金スキル"}, {"n": "快進撃", "e": "終盤が迫ったとき先頭にいるか先頭から4バ身以内だと速度と加速力が少し上がる＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==3&running_style==2&phase_laterhalf_random==1&distance_diff_top<=10", "qty": 3000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "抜群の切れ味", "e": "レース終盤突入時まで掛からず後方に控え続けていると、終盤始めの方で加速力が上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_rate>=66&order_rate_out50_continue==1&temptation_count==0 & running_style==4&phase_firsthalf_random==2", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "未来を拓く奇跡", "e": "更なる奇跡を起こすべくレース終盤に加速力が上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "盤石の構え", "e": "レース序盤にスキルを多く発動すると加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "exclude", "subtype": "phase0_count"}, "raw": "activate_count_start>=3", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "ハイボルテージ", "e": "レース終盤始めの方で前方にいると加速力が上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "王手", "e": "終盤以降の最終コーナーで中団以前にいる時ゴールまで遠いと加速力が上がる＜先行/差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 600}, "raw": "running_style==2&phase>=2&is_finalcorner==1&corner!=0&remain_distance>=600&order_rate<=70@running_style==3&phase>=2&is_finalcorner==1&corner!=0&remain", "qty": 4000.0, "dur": 9000, "rar": 2, "rarj": "金スキル"}, {"n": "万里一空", "e": "ラストスパートの最中なら直線で前の方だと加速力が上がる＜逃げ・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==1&is_lastspurt==1&corner==0&order<=3", "qty": 4000.0, "dur": 9000, "rar": 2, "rarj": "金スキル"}, {"n": "君臨", "e": "終盤以降の最終コーナーで中団以降にいると加速力が上がる＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&running_style==4&phase>=2&is_finalcorner==1&corner!=0&order_rate>=40", "qty": 4000.0, "dur": 9000, "rar": 2, "rarj": "金スキル"}, {"n": "究極のヒルクライマー", "e": "上り坂で加速力が上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_up", "subtype": "slope_up"}, "raw": "up_slope_random==1", "qty": 4000.0, "dur": 30000, "rar": 2, "rarj": "金スキル"}, {"n": "踏みしめる大地", "e": "レース終盤始めの方で前方にいると加速力が上がる＜先行・ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "fh"}, "raw": "ground_type==2&running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "王道一途", "e": "レース終盤始めの方で前方にいると加速力が上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "まとわりつく霧", "e": "前向きな気持ちが霞みレース終盤以降に加速力が絶望的に下がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2", "qty": -16000.0, "dur": 40000, "rar": 2, "rarj": "金スキル"}, {"n": "一点集中", "e": "レース終盤始めの方早めに前の方にいると加速力が上がる＜先行・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==4&phase_firstquarter_random==2&order_rate<=50", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "千載一遇", "e": "レース終盤始めの方早めに中団以降にいると加速力が上がる＜追込・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==4&distance_type==4&phase_firstquarter_random==2&order_rate>=40", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "勝負はここから！", "e": "終盤以降の最終コーナーで3番手以内にいると加速力が上がる＜逃げ・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&running_style==1&phase>=2&is_finalcorner==1&corner!=0&order<=3", "qty": 4000.0, "dur": 9000, "rar": 2, "rarj": "金スキル"}, {"n": "イニシアチブ", "e": "レース終盤始めの方で前方にいると加速力が上がる＜逃げ・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==1&distance_type==1&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "丁々発止", "e": "レース終盤始めの方で前方にいると加速力が上がる＜先行・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&distance_type==1&phase_firsthalf_random==2&order_rate<=50", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "天真爛漫", "e": "レース終盤始めの方で中団以降にいると加速力が上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==2&phase_firsthalf_random==2&order_rate>=40", "qty": 4000.0, "dur": 18000, "rar": 2, "rarj": "金スキル"}, {"n": "夢の舞台へ", "e": "レース終盤始めの方早めに前方にいると加速力が上がる＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==3&phase_firstquarter_random==2&order_rate<=50", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "ショーダウン", "e": "ラストスパートの最中なら直線で加速力が上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==2&is_lastspurt==1&corner==0", "qty": 4000.0, "dur": 9000, "rar": 2, "rarj": "金スキル"}, {"n": "天賦の才", "e": "レース終盤始めの方早めに中団以降にいると加速力が上がる＜差し・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==3&distance_type==3&phase_firstquarter_random==2&order_rate>=40", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "一世一代", "e": "レース終盤始めの方早めに中団以降にいると加速力が上がる＜差し・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==3&distance_type==4&phase_firstquarter_random==2&order_rate>=40", "qty": 4000.0, "dur": 12000, "rar": 2, "rarj": "金スキル"}, {"n": "猪突猛進", "e": "終盤以降かつ残り600mを切っているとき先頭にいるか前方で追い抜こうとすると加速力が上がる＜逃げ/先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_lte", "rv": 600}, "raw": "running_style==1@running_style==2 & phase>=2&remain_distance<=600&order==1@phase>=2&remain_distance<=600&is_overtake==1&order_rate<=50", "qty": 4000.0, "dur": 15000, "rar": 2, "rarj": "金スキル"}, {"n": "コーナー加速○", "e": "華麗なコーナーワークで加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "all_corner_random==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "コーナー加速×", "e": "ぎこちないコーナーワークで加速力が少し下がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "all_corner"}, "raw": "all_corner_random==1", "qty": -2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "直線加速", "e": "直線で加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "straight_random"}, "raw": "straight_random==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "垂れウマ回避", "e": "ラストスパートの最中なら前が塞がれた時加速力がわずかに上がりコース取りがちょっとうまくなる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "infront_near_lane_time>=1&is_lastspurt==1&hp_per>=1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "押し切り準備", "e": "最終コーナーで先頭だと加速力がわずかに上がる＜作戦・逃げ＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "finalcorner_random"}, "raw": "running_style==1&is_finalcorner_random==1&order==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "差し切り体勢", "e": "レース終盤始めの方に中団以降にいると加速力がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&phase_firsthalf_random==2&order_rate>=40", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "直線一気", "e": "ラストスパートの最中なら直線で加速力がわずかに上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==4&is_lastspurt==1&corner==0", "qty": 2000.0, "dur": 9000, "rar": 1, "rarj": "白スキル"}, {"n": "スプリントギア", "e": "レース終盤に加速力がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "詰め寄り", "e": "レース終盤に後ろの方だと速度がわずかに上がり、加速力がほんのちょっと上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase_random==2&order_rate>50", "qty": 500.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "上昇気流", "e": "レース終盤に後ろの方だと加速力がわずかに上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==2&phase_random==2&order_rate>50", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "食い下がり", "e": "最終コーナー以降に詰め寄られると速度がわずかに上がり、加速力がほんのちょっと上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&is_finalcorner==1&overtake_target_time>=2", "qty": 500.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "善後策", "e": "レース終盤が迫ったとき前の方にいると加速力がわずかに上がる＜短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==1&phase_laterhalf_random==1&order>=2&order_rate<=50", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "アクセラレーション", "e": "レース後半に追い抜くと加速力がわずかに上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "dist_rate_after", "rate": 50}, "raw": "distance_type==2&distance_rate>=50&change_order_onetime<0", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "追い上げ", "e": "レース終盤で追い抜くと速度がわずかに上がり加速力がほんのちょっと上がる＜長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==4&phase==2&change_order_onetime<0", "qty": 500.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "二の矢", "e": "レース終盤に持久力を少し使って加速力をわずかに上げる＜作戦・逃げ＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==1&phase_random==2", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "巧みなステップ", "e": "左右に移動するとき加速力がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==2&is_move_lane==1@running_style==2&is_move_lane==2", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "直滑降", "e": "下り坂で加速力がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==2&down_slope_random==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "がんばり屋", "e": "追い抜こうとするときしばらくの間加速力がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "running_style==3&is_overtake==1&accumulatetime>=5", "qty": 2000.0, "dur": 40000, "rar": 1, "rarj": "白スキル"}, {"n": "登山家", "e": "上り坂で加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_up", "subtype": "slope_up"}, "raw": "up_slope_random==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "地固め", "e": "レース序盤にスキルを多く発動すると加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "exclude", "subtype": "phase0_count"}, "raw": "activate_count_start>=3", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "アオハル点火・力", "e": "レース終盤にアオハル魂が燃えレース中のチームメンバーのパワー合計が高いほど加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase_random==2", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "アオハル点火・根", "e": "レース終盤にアオハル魂が燃えレース中のチームメンバーの根性合計が高いほど脚にちょっと力強さが宿る", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase_random==2", "qty": 1000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "前列狙い", "e": "レース終盤にコース取りが少し上手くなり加速力がわずかに上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "真っ向勝負", "e": "レース終盤始めの方で前方にいると加速力がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "綺羅星", "e": "レース後半にちょっと呼吸を整え前へ踏み込む育成で重ねた勝利の数だけ効果が高まる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "distance_rate_after_random==50", "qty": 1000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "ワンチャンス", "e": "レース終盤始めの方で中団以降にいると加速力がわずかに上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate>=40", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "恐れぬ心", "e": "レース後半に中団にいると速度がわずかに上がり加速力がほんのちょっと上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "running_style==3&distance_rate_after_random==50&order_rate>=30&order_rate<=80", "qty": 500.0, "dur": 24000, "rar": 1, "rarj": "白スキル"}, {"n": "意気込み十分", "e": "レース終盤に前方にいると加速力がわずかに上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2&order_rate<=50", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "急浮上", "e": "レース終盤に中団以降にいると加速力がわずかに上がる＜ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "ground_type==2&phase_random==2&order_rate>=50", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "夢の途中", "e": "レース後半に中団以前だと速度がわずかに上がり加速力がほんのわずかに上がるファンが多いほど効果が高まる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "after50"}, "raw": "distance_rate_after_random==50&order_rate<=65", "qty": 700.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "一足飛び", "e": "レース終盤以降に後方で追い抜こうとすると加速力がわずかに上がる＜短距離/マイル＞", "dt": [1, 2], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "distance_type==1&phase>=2&order_rate>=50&is_overtake==1@distance_type==2&phase>=2&order_rate>=50&is_overtake==1", "qty": 2000.0, "dur": 20000, "rar": 1, "rarj": "白スキル"}, {"n": "がむしゃら", "e": "ラストスパートの最中なら中団以降にいると持久力を少し使って加速力がわずかに上がる＜差し・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==3&is_lastspurt==1&order_rate>=40", "qty": 2000.0, "dur": 15000, "rar": 1, "rarj": "白スキル"}, {"n": "確かな足取り", "e": "終盤が迫ったとき先頭にいるか先頭から4バ身以内だと速度と加速力がちょっと上がる＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "lh"}, "raw": "distance_type==3&running_style==2&phase_laterhalf_random==1&distance_diff_top<=10", "qty": 1000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "レースの真髄・根", "e": "追い比べをするとき加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalstraight", "fixed_point": "finalstraight"}, "raw": "compete_fight_count>0", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "切れ味", "e": "レース終盤突入時まで掛からず後方に控え続けていると、終盤始めの方で加速力がわずかに上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_rate>=66&order_rate_out50_continue==1&temptation_count==0 & running_style==4&phase_firsthalf_random==2", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "ボルテージヒーロー", "e": "絶好調なら全ての基礎能力が上がりレース中常にスキルの不利な効果を受けなくなり加速力がちょっと上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "always"}, "raw": "motivation>=5", "mv": 5, "qty": 1000.0, "dur": -1, "rar": 1, "rarj": "白スキル"}, {"n": "サンライズヒーロー", "e": "天候が晴れでバ場状態が良のとき全ての基礎能力がすごく上がりレース中常に加速力がちょっと上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "always"}, "raw": "weather==1&ground_condition==1", "gc": [1], "qty": 1000.0, "dur": -1, "rar": 1, "rarj": "白スキル"}, {"n": "レイニーヒーロー", "e": "天候が雨でバ場状態が不良のときスピードとスタミナがものすごく上がりレース中常に加速力がわずかに上がる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "always"}, "raw": "weather==3&ground_condition==4", "gc": [4], "qty": 2000.0, "dur": -1, "rar": 1, "rarj": "白スキル"}, {"n": "インサイドヒーロー", "e": "枠番が1～3だとスタート後しばらくの間速度と加速力を少し上げ、その後終盤すぐ加速力を少し上げ持久力を回復する", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "other"}, "raw": "post_number<=3", "qty": 3000.0, "dur": 40000, "rar": 1, "rarj": "白スキル"}, {"n": "リンケージヒーロー", "e": "チームのスキル発動数が6以上だと終盤以降に加速力を少し上げ持久力を回復する、発動数が10以上だと効果が増える", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2&activate_count_all_team>=10", "qty": 4000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "スパートヒーロー", "e": "レース終盤すぐにすごく前に出て持久力を回復し加速力をちょっと上げる", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "phase2"}, "raw": "phase>=2", "qty": 1000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "心弾んで", "e": "レース終盤始めの方で前方にいると加速力がわずかに上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==2&phase_firsthalf_random==2&order_rate<=50", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "会心の一歩", "e": "終盤以降の最終コーナーで中団以前にいる時ゴールまで遠いと加速力がわずかに上がる＜先行/差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_range", "rv": 600}, "raw": "running_style==2&phase>=2&is_finalcorner==1&corner!=0&remain_distance>=600&order_rate<=70@running_style==3&phase>=2&is_finalcorner==1&corner!=0&remain", "qty": 2000.0, "dur": 9000, "rar": 1, "rarj": "白スキル"}, {"n": "狙いを定めて", "e": "レース終盤始めの方早めに前の方にいると加速力がわずかに上がる＜先行・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==4&phase_firstquarter_random==2&order_rate<=50", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "迷いなし", "e": "ラストスパートの最中なら直線で前の方だと加速力がわずかに上がる＜逃げ・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "distance_type==4&running_style==1&is_lastspurt==1&corner==0&order<=3", "qty": 2000.0, "dur": 9000, "rar": 1, "rarj": "白スキル"}, {"n": "渾身の足取り", "e": "終盤以降の最終コーナーで中団以降にいると加速力がわずかに上がる＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&running_style==4&phase>=2&is_finalcorner==1&corner!=0&order_rate>=40", "qty": 2000.0, "dur": 9000, "rar": 1, "rarj": "白スキル"}, {"n": "好機を捉えて", "e": "レース終盤始めの方早めに中団以降にいると加速力がわずかに上がる＜追込・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==4&distance_type==4&phase_firstquarter_random==2&order_rate>=40", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "力の限り", "e": "レース終盤始めの方で前方にいると加速力がわずかに上がる＜先行・ダート＞", "dt": [1, 2, 3, 4], "gt": [2], "tm": {"type": "random", "subtype": "fh"}, "raw": "ground_type==2&running_style==2&phase_firsthalf_random==2&order_rate<=50", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "正面突破", "e": "レース終盤始めの方で前方にいると加速力がわずかに上がる＜中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==3&phase_firsthalf_random==2&order_rate<=50", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "覚悟を決めて", "e": "レース終盤始めの方早めに前の方にいると加速力がわずかに上がる＜逃げ・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==1&distance_type==4&phase_firstquarter_random==2&order_rate<=50", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "駆け降り", "e": "下り坂で加速力がわずかに上がる＜作戦・差し＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==3&down_slope_random==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "逃げ切り体勢", "e": "終盤以降の最終コーナーで3番手以内にいると加速力がわずかに上がる＜逃げ・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "finalcorner", "fixed_point": "finalcorner"}, "raw": "distance_type==3&running_style==1&phase>=2&is_finalcorner==1&corner!=0&order<=3", "qty": 2000.0, "dur": 9000, "rar": 1, "rarj": "白スキル"}, {"n": "追い風に乗って", "e": "レース終盤始めの方早めに前方にいると加速力がわずかに上がる＜逃げ・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==1&distance_type==3&phase_firstquarter_random==2&order_rate<=50", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "憧れを越えて", "e": "レース終盤始めの方早めに前方にいると加速力がわずかに上がる＜先行・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==2&distance_type==3&phase_firstquarter_random==2&order_rate<=50", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "ターニングポイント", "e": "レース終盤始めの方に中団以降にいると加速力がわずかに上がる＜差し・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==3&distance_type==1&phase_firsthalf_random==2&order_rate>=40", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "譲れぬ一歩", "e": "レース終盤始めの方で前方にいると加速力がわずかに上がる＜逃げ・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==1&distance_type==1&phase_firsthalf_random==2&order_rate<=50", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "火花散らして", "e": "レース終盤始めの方で前方にいると加速力がわずかに上がる＜先行・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==2&distance_type==1&phase_firsthalf_random==2&order_rate<=50", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "垣間見た光", "e": "レース終盤始めの方早めに中団以降にいると加速力がわずかに上がる＜追込・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==4&distance_type==3&phase_firstquarter_random==2&order_rate>=40", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "足任せ", "e": "レース終盤始めの方で中団以降にいると加速力がわずかに上がる＜マイル＞", "dt": [2], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "distance_type==2&phase_firsthalf_random==2&order_rate>=40", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "勇気の一歩", "e": "ラストスパートの最中なら直線で加速力がわずかに上がる＜作戦・先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "fixed", "subtype": "ls", "fixed_point": "ls"}, "raw": "running_style==2&is_lastspurt==1&corner==0", "qty": 2000.0, "dur": 9000, "rar": 1, "rarj": "白スキル"}, {"n": "頂を目指して", "e": "レース終盤始めの方早めに中団以降にいると加速力がわずかに上がる＜差し・中距離＞", "dt": [3], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==3&distance_type==3&phase_firstquarter_random==2&order_rate>=40", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "ヒートアップ", "e": "レース終盤始めの方に中団以降にいると加速力がわずかに上がる＜追込・短距離＞", "dt": [1], "gt": [1, 2], "tm": {"type": "random", "subtype": "fh"}, "raw": "running_style==4&distance_type==1&phase_firsthalf_random==2&order_rate>=40", "qty": 2000.0, "dur": 18000, "rar": 1, "rarj": "白スキル"}, {"n": "急降下", "e": "下り坂で加速力がわずかに上がる＜作戦・追込＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "slope_down", "subtype": "slope_down"}, "raw": "running_style==4&down_slope_random==1", "qty": 2000.0, "dur": 30000, "rar": 1, "rarj": "白スキル"}, {"n": "ここ一番", "e": "レース終盤始めの方早めに中団以降にいると加速力がわずかに上がる＜差し・長距離＞", "dt": [4], "gt": [1, 2], "tm": {"type": "random", "subtype": "fq"}, "raw": "running_style==3&distance_type==4&phase_firstquarter_random==2&order_rate>=40", "qty": 2000.0, "dur": 12000, "rar": 1, "rarj": "白スキル"}, {"n": "押しの一手", "e": "終盤以降かつ残り600mを切っているとき先頭にいるか前方で追い抜こうとすると加速力がわずかに上がる＜逃げ/先行＞", "dt": [1, 2, 3, 4], "gt": [1, 2], "tm": {"type": "random", "subtype": "remain_lte", "rv": 600}, "raw": "running_style==1@running_style==2 & phase>=2&remain_distance<=600&order==1@phase>=2&remain_distance<=600&is_overtake==1&order_rate<=50", "qty": 2000.0, "dur": 15000, "rar": 1, "rarj": "白スキル"}];
-
-
-const PRESETS = [{"name":"スプリンターズステークス","venue":"中山","track_id":10006,"distance":1200,"ls":800,"fc":650,"fs":900,"us":[[1020,1130]],"ds":[[0,200]],"gt":1},{"name":"高松宮記念","venue":"中京","track_id":10007,"distance":1200,"ls":800,"fc":580,"fs":790,"us":[[880,1000]],"ds":[[120,870]],"gt":1},{"name":"JBCスプリント","venue":"大井","track_id":10101,"distance":1200,"ls":800,"fc":670,"fs":820,"us":[],"ds":[],"gt":2},{"name":"阪神ジュベナイルフィリーズ","venue":"阪神","track_id":10009,"distance":1600,"ls":1070,"fc":800,"fs":1130,"us":[[1400,1510]],"ds":[[1000,1390]],"gt":1},{"name":"朝日杯フューチュリティS","venue":"阪神","track_id":10009,"distance":1600,"ls":1070,"fc":800,"fs":1130,"us":[[1400,1510]],"ds":[[1000,1390]],"gt":1},{"name":"マイルチャンピオンシップ","venue":"京都","track_id":10008,"distance":1600,"ls":1070,"fc":960,"fs":1200,"us":[[410,780]],"ds":[[790,910]],"gt":1},{"name":"安田記念","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":830,"fs":1080,"us":[[320,400],[1150,1300]],"ds":[[450,710]],"gt":1},{"name":"NHKマイルカップ","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":830,"fs":1080,"us":[[320,400],[1150,1300]],"ds":[[450,710]],"gt":1},{"name":"ヴィクトリアマイル","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":830,"fs":1080,"us":[[320,400],[1150,1300]],"ds":[[450,710]],"gt":1},{"name":"桜花賞","venue":"阪神","track_id":10009,"distance":1600,"ls":1070,"fc":800,"fs":1130,"us":[[1400,1510]],"ds":[[1000,1390]],"gt":1},{"name":"フェブラリーS","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":870,"fs":1100,"us":[[1100,1400]],"ds":[[600,800]],"gt":2},{"name":"マイルCS南部杯","venue":"盛岡","track_id":10104,"distance":1600,"ls":1070,"fc":1070,"fs":1250,"us":[[500,830],[1350,1550]],"ds":[[900,1350]],"gt":2},{"name":"全日本ジュニア優駿","venue":"川崎","track_id":10102,"distance":1600,"ls":1070,"fc":1200,"fs":1300,"us":[],"ds":[],"gt":2},{"name":"かしわ記念","venue":"船橋","track_id":10103,"distance":1600,"ls":1070,"fc":1120,"fs":1250,"us":[],"ds":[],"gt":2},{"name":"JBCレディスクラシック","venue":"大井","track_id":10101,"distance":1800,"ls":1200,"fc":1270,"fs":1420,"us":[],"ds":[],"gt":2},{"name":"チャンピオンズカップ","venue":"中京","track_id":10007,"distance":1800,"ls":1200,"fc":1210,"fs":1390,"us":[[0,170],[1410,1580]],"ds":[[830,1400]],"gt":2},{"name":"秋華賞","venue":"京都","track_id":10008,"distance":2000,"ls":1333,"fc":1440,"fs":1670,"us":[[950,1100]],"ds":[[1220,1390]],"gt":1},{"name":"皐月賞","venue":"中山","track_id":10006,"distance":2000,"ls":1333,"fc":1470,"fs":1700,"us":[[170,270],[350,550],[1800,1900]],"ds":[[800,1050]],"gt":1},{"name":"大阪杯","venue":"阪神","track_id":10009,"distance":2000,"ls":1333,"fc":1370,"fs":1640,"us":[[130,250],[1800,1910]],"ds":[[0,120],[1200,1790]],"gt":1},{"name":"ホープフルS","venue":"中山","track_id":10006,"distance":2000,"ls":1333,"fc":1470,"fs":1700,"us":[[170,270],[350,550],[1800,1900]],"ds":[[800,1050]],"gt":1},{"name":"天皇賞秋","venue":"東京","track_id":10005,"distance":2000,"ls":1333,"fc":1230,"fs":1500,"us":[[720,800],[1550,1700]],"ds":[[860,1120]],"gt":1},{"name":"宝塚記念","venue":"阪神","track_id":10009,"distance":2200,"ls":1467,"fc":1570,"fs":1840,"us":[[300,400],[2000,2110]],"ds":[[0,290],[1400,1990]],"gt":1},{"name":"エリザベス女王杯","venue":"京都","track_id":10008,"distance":2200,"ls":1467,"fc":1560,"fs":1800,"us":[[1010,1380]],"ds":[[1390,1510]],"gt":1},{"name":"日本ダービー","venue":"東京","track_id":10005,"distance":2400,"ls":1600,"fc":1630,"fs":1900,"us":[[0,50],[1120,1200],[1950,2100]],"ds":[[1260,1520]],"gt":1},{"name":"ジャパンカップ","venue":"東京","track_id":10005,"distance":2400,"ls":1600,"fc":1630,"fs":1900,"us":[[0,50],[1120,1200],[1950,2100]],"ds":[[1260,1520]],"gt":1},{"name":"オークス","venue":"東京","track_id":10005,"distance":2400,"ls":1600,"fc":1630,"fs":1900,"us":[[0,50],[1120,1200],[1950,2100]],"ds":[[1260,1520]],"gt":1},{"name":"帝王賞","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"ジャパンダートダービー","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"東京大賞典","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"JBCクラシック","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"川崎記念","venue":"川崎","track_id":10102,"distance":2100,"ls":1400,"fc":1700,"fs":1800,"us":[],"ds":[],"gt":2},{"name":"有馬記念","venue":"中山","track_id":10006,"distance":2500,"ls":1667,"fc":1970,"fs":2200,"us":[[670,770],[850,1050],[2300,2400]],"ds":[[1200,1550]],"gt":1},{"name":"菊花賞","venue":"京都","track_id":10008,"distance":3000,"ls":2000,"fc":2360,"fs":2600,"us":[[0,300],[1810,2180]],"ds":[[310,430],[2190,2310]],"gt":1},{"name":"天皇賞春","venue":"京都","track_id":10008,"distance":3200,"ls":2133,"fc":2560,"fs":2800,"us":[[200,530],[2050,2380]],"ds":[[520,680],[2380,2520]],"gt":1}];
-
+const RACES  = [{"name":"スプリンターズステークス","venue":"中山","track_id":10006,"distance":1200,"ls":800,"fc":650,"fs":900,"us":[[1020,1130]],"ds":[[0,200]],"gt":1},{"name":"高松宮記念","venue":"中京","track_id":10007,"distance":1200,"ls":800,"fc":580,"fs":790,"us":[[880,1000]],"ds":[[120,870]],"gt":1},{"name":"JBCスプリント","venue":"大井","track_id":10101,"distance":1200,"ls":800,"fc":670,"fs":820,"us":[],"ds":[],"gt":2},{"name":"阪神ジュベナイルフィリーズ","venue":"阪神","track_id":10009,"distance":1600,"ls":1070,"fc":800,"fs":1130,"us":[[1400,1510]],"ds":[[1000,1390]],"gt":1},{"name":"朝日杯フューチュリティS","venue":"阪神","track_id":10009,"distance":1600,"ls":1070,"fc":800,"fs":1130,"us":[[1400,1510]],"ds":[[1000,1390]],"gt":1},{"name":"マイルチャンピオンシップ","venue":"京都","track_id":10008,"distance":1600,"ls":1070,"fc":960,"fs":1200,"us":[[410,780]],"ds":[[790,910]],"gt":1},{"name":"安田記念","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":830,"fs":1080,"us":[[320,400],[1150,1300]],"ds":[[450,710]],"gt":1},{"name":"NHKマイルカップ","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":830,"fs":1080,"us":[[320,400],[1150,1300]],"ds":[[450,710]],"gt":1},{"name":"ヴィクトリアマイル","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":830,"fs":1080,"us":[[320,400],[1150,1300]],"ds":[[450,710]],"gt":1},{"name":"桜花賞","venue":"阪神","track_id":10009,"distance":1600,"ls":1070,"fc":800,"fs":1130,"us":[[1400,1510]],"ds":[[1000,1390]],"gt":1},{"name":"フェブラリーS","venue":"東京","track_id":10005,"distance":1600,"ls":1070,"fc":870,"fs":1100,"us":[[1100,1400]],"ds":[[600,800]],"gt":2},{"name":"マイルCS南部杯","venue":"盛岡","track_id":10104,"distance":1600,"ls":1070,"fc":1070,"fs":1250,"us":[[500,830],[1350,1550]],"ds":[[900,1350]],"gt":2},{"name":"全日本ジュニア優駿","venue":"川崎","track_id":10102,"distance":1600,"ls":1070,"fc":1200,"fs":1300,"us":[],"ds":[],"gt":2},{"name":"かしわ記念","venue":"船橋","track_id":10103,"distance":1600,"ls":1070,"fc":1120,"fs":1250,"us":[],"ds":[],"gt":2},{"name":"JBCレディスクラシック","venue":"大井","track_id":10101,"distance":1800,"ls":1200,"fc":1270,"fs":1420,"us":[],"ds":[],"gt":2},{"name":"チャンピオンズカップ","venue":"中京","track_id":10007,"distance":1800,"ls":1200,"fc":1210,"fs":1390,"us":[[0,170],[1410,1580]],"ds":[[830,1400]],"gt":2},{"name":"秋華賞","venue":"京都","track_id":10008,"distance":2000,"ls":1333,"fc":1440,"fs":1670,"us":[[950,1100]],"ds":[[1220,1390]],"gt":1},{"name":"皐月賞","venue":"中山","track_id":10006,"distance":2000,"ls":1333,"fc":1470,"fs":1700,"us":[[170,270],[350,550],[1800,1900]],"ds":[[800,1050]],"gt":1},{"name":"大阪杯","venue":"阪神","track_id":10009,"distance":2000,"ls":1333,"fc":1370,"fs":1640,"us":[[130,250],[1800,1910]],"ds":[[0,120],[1200,1790]],"gt":1},{"name":"ホープフルS","venue":"中山","track_id":10006,"distance":2000,"ls":1333,"fc":1470,"fs":1700,"us":[[170,270],[350,550],[1800,1900]],"ds":[[800,1050]],"gt":1},{"name":"天皇賞秋","venue":"東京","track_id":10005,"distance":2000,"ls":1333,"fc":1230,"fs":1500,"us":[[720,800],[1550,1700]],"ds":[[860,1120]],"gt":1},{"name":"宝塚記念","venue":"阪神","track_id":10009,"distance":2200,"ls":1467,"fc":1570,"fs":1840,"us":[[300,400],[2000,2110]],"ds":[[0,290],[1400,1990]],"gt":1},{"name":"エリザベス女王杯","venue":"京都","track_id":10008,"distance":2200,"ls":1467,"fc":1560,"fs":1800,"us":[[1010,1380]],"ds":[[1390,1510]],"gt":1},{"name":"日本ダービー","venue":"東京","track_id":10005,"distance":2400,"ls":1600,"fc":1630,"fs":1900,"us":[[0,50],[1120,1200],[1950,2100]],"ds":[[1260,1520]],"gt":1},{"name":"ジャパンカップ","venue":"東京","track_id":10005,"distance":2400,"ls":1600,"fc":1630,"fs":1900,"us":[[0,50],[1120,1200],[1950,2100]],"ds":[[1260,1520]],"gt":1},{"name":"オークス","venue":"東京","track_id":10005,"distance":2400,"ls":1600,"fc":1630,"fs":1900,"us":[[0,50],[1120,1200],[1950,2100]],"ds":[[1260,1520]],"gt":1},{"name":"帝王賞","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"ジャパンダートダービー","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"東京大賞典","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"JBCクラシック","venue":"大井","track_id":10101,"distance":2000,"ls":1333,"fc":1470,"fs":1620,"us":[],"ds":[],"gt":2},{"name":"川崎記念","venue":"川崎","track_id":10102,"distance":2100,"ls":1400,"fc":1700,"fs":1800,"us":[],"ds":[],"gt":2},{"name":"有馬記念","venue":"中山","track_id":10006,"distance":2500,"ls":1667,"fc":1970,"fs":2200,"us":[[670,770],[850,1050],[2300,2400]],"ds":[[1200,1550]],"gt":1},{"name":"菊花賞","venue":"京都","track_id":10008,"distance":3000,"ls":2000,"fc":2360,"fs":2600,"us":[[0,300],[1810,2180]],"ds":[[310,430],[2190,2310]],"gt":1},{"name":"天皇賞春","venue":"京都","track_id":10008,"distance":3200,"ls":2133,"fc":2560,"fs":2800,"us":[[200,530],[2050,2380]],"ds":[[520,680],[2380,2520]],"gt":1}];
 
 /* ────────────────────────────────
-   UI STATE
+   CONSTANTS
 ──────────────────────────────── */
-let g_gt = null; 
-let g_gc = null; 
-let mvVal = null;
-let rarFilter = new Set();
+const DT_LABEL = {1:'短距離',2:'マイル',3:'中距離',4:'長距離'};
+const GT_LABEL = {1:'芝',2:'ダート'};
+const GC_LABEL = {1:'良',2:'稍重',3:'重',4:'不良'};
+const MV_LABEL = {1:'絶不調',2:'不調',3:'普通',4:'好調',5:'絶好調'};
+
+const VENUE_TRACKS = {
+  '東京':[10005],'中山':[10006],'京都':[10008],'阪神':[10009],'中京':[10007],
+  '大井':[10101],'川崎':[10102],'船橋':[10103],'盛岡':[10104],
+  '札幌':[10001],'函館':[10002],'福島':[10003],'新潟':[10004],
+  '小倉':[10010],'佐賀':[10201]
+};
+const VENUES = ['東京','中山','京都','阪神','中京','大井','川崎','船橋','盛岡'];
+
+function getDistType(d){ return d<=1599?1:d<=1999?2:d<=2499?3:4; }
+
 let uCnt=0, dCnt=0;
 
 /* ────────────────────────────────
    INIT
 ──────────────────────────────── */
-window.onload = () => {
-  const dSel = document.getElementById('distSel');
-  const dTypes = {1:'短距離', 2:'マイル', 3:'中距離', 4:'長距離'};
-  Object.entries(dTypes).forEach(([v,l])=>{
-    const o = document.createElement('option');
-    o.value=v; o.textContent=l; dSel.appendChild(o);
-  });
-  
-  const pSel = document.getElementById('presetSel');
-  PRESETS.forEach((p,i)=>{
-    const o = document.createElement('option');
-    o.value=i; o.textContent=p.name; pSel.appendChild(o);
-  });
-
+(function init(){
   document.getElementById('dbCnt').textContent = SKILLS.length;
-};
+
+  // 距離
+  const ds = document.getElementById('distSel');
+  for(let d=1200;d<=3200;d+=100){
+    const o=document.createElement('option');
+    o.value=d; o.textContent=`${d}m（${DT_LABEL[getDistType(d)]}）`;
+    ds.appendChild(o);
+  }
+
+  // 会場
+  const vs = document.getElementById('venueSel');
+  const jra=['東京','中山','京都','阪神','中京'];
+  const chiho=['大井','川崎','船橋','盛岡'];
+  function addVG(label, arr){
+    const g=document.createElement('optgroup'); g.label=label;
+    arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; g.appendChild(o); });
+    vs.appendChild(g);
+  }
+  addVG('JRA',jra); addVG('地方',chiho);
+
+  // プリセット
+  const ps = document.getElementById('presetSel');
+  const preJRA=[], preChiho=[];
+  RACES.forEach((r,i)=>{
+    const isJ = ['東京','中山','京都','阪神','中京'].includes(r.venue);
+    (isJ?preJRA:preChiho).push({r,i});
+  });
+  function addPG(label, arr){
+    const g=document.createElement('optgroup'); g.label=label;
+    arr.forEach(({r,i})=>{
+      const o=document.createElement('option'); o.value=i;
+      o.textContent=`${r.name}（${r.venue} ${r.distance}m/${GT_LABEL[r.gt]}）`;
+      g.appendChild(o);
+    });
+    ps.appendChild(g);
+  }
+  addPG('JRA',preJRA); addPG('地方',preChiho);
+})();
 
 /* ────────────────────────────────
-   CORE LOGIC
+   UI HELPERS
 ──────────────────────────────── */
-function tog(btn){
-  const g = btn.dataset.g;
-  document.querySelectorAll(`.tb[data-g="${g}"]`).forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  if(g==='gt') { g_gt = parseInt(btn.dataset.v); onGtChange(); }
-  if(g==='gc') g_gc = parseInt(btn.dataset.v);
-  clearErr();
+let rarFilter = new Set(); // 空=全表示
+function togRar(btn){
+  const v = parseInt(btn.dataset.rar);
+  if(rarFilter.has(v)){ rarFilter.delete(v); btn.classList.remove('on'); }
+  else { rarFilter.add(v); btn.classList.add('on'); }
 }
 
+function tog(btn){
+  document.querySelectorAll(`[data-g="${btn.dataset.g}"]`).forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+let mvVal = null;
 function togMv(btn){
   const v = parseInt(btn.dataset.v);
-  if(mvVal === v){
-    mvVal = null; btn.classList.remove('on');
-  } else {
-    document.querySelectorAll('.tb[data-g="mv"]').forEach(b=>b.classList.remove('on'));
-    btn.classList.add('on');
-    mvVal = v;
+  if(mvVal===v){ btn.classList.remove('on'); mvVal=null; }
+  else {
+    document.querySelectorAll('[data-g="mv"]').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on'); mvVal=v;
   }
 }
+function getSel(g){ const b=document.querySelector(`[data-g="${g}"].on`); return b?parseInt(b.dataset.v):null; }
 
-function togRar(btn){
-  const r = parseInt(btn.dataset.rar);
-  if(rarFilter.has(r)){
-    rarFilter.delete(r); btn.classList.remove('on');
-  } else {
-    rarFilter.add(r); btn.classList.add('on');
-  }
+function clearErr(){
+  document.querySelectorAll('.err').forEach(e=>e.classList.remove('show'));
+  document.querySelectorAll('.err-ring').forEach(e=>e.classList.remove('err-ring'));
+}
+function showErr(eid, eid2){
+  document.getElementById(eid).classList.add('show');
+  if(eid2) document.getElementById(eid2).classList.add('err-ring');
 }
 
-function onDistChange(){
-  onGtChange(); clearErr();
+/* 坂行 */
+function addSlope(t){ addSlopeRow(t,'',''); }
+function addSlopeRow(t,s,e){
+  const cont=document.getElementById(t==='up'?'upRows':'dnRows');
+  const id=t==='up'?++uCnt:++dCnt;
+  const rid=`${t}_${id}`;
+  const div=document.createElement('div'); div.className='srow'; div.id=`row_${rid}`;
+  div.innerHTML=`<input type="number" id="${rid}_s" value="${s||''}" placeholder="開始m" min="0" max="3200">`
+    +`<span class="sep-txt">〜</span>`
+    +`<input type="number" id="${rid}_e" value="${e||''}" placeholder="終了m" min="0" max="3200">`
+    +`<button class="rm" onclick="this.closest('.srow').remove()" title="削除">✕</button>`;
+  cont.appendChild(div);
 }
-
-function onGtChange(){
-  const dist = parseInt(document.getElementById('distSel').value);
-  const vSel = document.getElementById('venueSel');
-  vSel.innerHTML = '<option value="">選択してください</option>';
-  if(!dist || !g_gt) return;
-  const filtered = PRESETS.filter(p => p.dt === dist && p.gt === g_gt);
-  const seen = new Set();
-  filtered.forEach(p => {
-    if(!seen.has(p.v)){
-      const o = document.createElement('option');
-      o.value = p.v; o.textContent = p.v; vSel.appendChild(o);
-      seen.add(p.v);
-    }
+function getSlopes(t){
+  const res=[];
+  document.getElementById(t==='up'?'upRows':'dnRows').querySelectorAll('.srow').forEach(row=>{
+    const ins=row.querySelectorAll('input');
+    const s=parseFloat(ins[0].value), e=parseFloat(ins[1].value);
+    if(!isNaN(s)&&!isNaN(e)&&s<e) res.push([s,e]);
   });
+  return res;
 }
 
+/* プリセット適用 */
 function applyPreset(){
-  const idx = document.getElementById('presetSel').value;
+  const idx=document.getElementById('presetSel').value;
   if(idx==='') return;
-  const p = PRESETS[idx];
-  
-  document.getElementById('distSel').value = p.dt;
-  g_gt = p.gt;
-  document.querySelectorAll('.tb[data-g="gt"]').forEach(b => {
-    b.classList.toggle('on', parseInt(b.dataset.v)===p.gt);
-  });
-  
-  onGtChange();
-  document.getElementById('venueSel').value = p.v;
-
-  document.getElementById('manLS').value = p.ls;
-  document.getElementById('manFC').value = p.fc || '';
-  document.getElementById('manFS').value = p.fs || '';
-
-  const up = document.getElementById('upRows');
-  const dn = document.getElementById('dnRows');
-  up.innerHTML=''; dn.innerHTML=''; uCnt=0; dCnt=0;
-  if(p.up) p.up.forEach(range => addSlope('up', range[0], range[1]));
-  if(p.dn) p.dn.forEach(range => addSlope('dn', range[0], range[1]));
-  
+  const r=RACES[parseInt(idx)];
+  document.getElementById('distSel').value=r.distance;
+  document.querySelectorAll('[data-g="gt"]').forEach(b=>b.classList.remove('on'));
+  const gb=document.querySelector(`[data-g="gt"][data-v="${r.gt}"]`);
+  if(gb) gb.classList.add('on');
+  document.getElementById('venueSel').value=r.venue;
+  document.getElementById('manLS').value=r.ls;
+  document.getElementById('manFC').value=r.fc;
+  document.getElementById('manFS').value=r.fs;
+  document.getElementById('upRows').innerHTML='';
+  document.getElementById('dnRows').innerHTML='';
+  uCnt=0; dCnt=0;
+  (r.us||[]).forEach(([s,e])=>addSlopeRow('up',s,e));
+  (r.ds||[]).forEach(([s,e])=>addSlopeRow('dn',s,e));
   clearErr();
 }
 
-function addSlope(kind, s='', e=''){
-  const container = document.getElementById(kind==='up'?'upRows':'dnRows');
-  const id = kind + (kind==='up'?uCnt++:dCnt++);
-  const div = document.createElement('div');
-  div.className='srow'; div.id=id;
-  div.innerHTML = `
-    <input type="number" value="${s}" placeholder="開始">
-    <span class="sep-txt">~</span>
-    <input type="number" value="${e}" placeholder="終了">
-    <button class="rm" onclick="document.getElementById('${id}').remove()">×</button>
-  `;
-  container.appendChild(div);
+/* 距離変更時にlsを自動補完 */
+function onDistChange(){
+  const d=parseInt(document.getElementById('distSel').value)||0;
+  if(!d) return;
+  const ls=document.getElementById('manLS');
+  if(!ls.value) ls.value=Math.floor(d*2/3);
+}
+
+/* ────────────────────────────────
+   TIMING LOGIC
+──────────────────────────────── */
+function judgeOffset(off){
+  if(off>=-50 && off<=0){
+    const lbl = off===0 ? '最速発動 (ls)' : `最速発動 (${Math.abs(Math.round(off))}m前)`;
+    return {valid:true, cls:'b-fast', label:lbl, pri:0};
+  }
+  if(off>0 && off<=100) return {valid:true, cls:'b-semi', label:`準速発動 (+${Math.round(off)}m)`, pri:1};
+  if(off<-50) return {valid:false, cls:'b-inv', label:`無効（早期 ${Math.abs(Math.round(off))}m前）`, pri:90};
+  return {valid:false, cls:'b-inv', label:`無効（遅延 +${Math.round(off)}m）`, pri:91};
+}
+
+function calcResult(tm, rc){
+  const {ls, fc, fs, distance, us, ds} = rc;
+
+  // ── 常時発動 ──
+  if(tm.type==='always'){
+    return {valid:true, cls:'b-always', label:'常時有効', pri:2};
+  }
+
+  // ── 固定タイミング ──
+  if(tm.type==='fixed'){
+    let fp;
+    if(tm.fixed_point==='ls')             fp = ls;
+    else if(tm.fixed_point==='finalcorner')   fp = fc;
+    else if(tm.fixed_point==='finalstraight') fp = fs;
+    else if(tm.fixed_point==='remain')    fp = distance - tm.rv;
+    if(fp == null) return {valid:true, cls:'b-rand', label:'コース情報不足（要fc/fs入力）', pri:50};
+    return judgeOffset(fp - ls);
+  }
+
+  // ── 坂スキル（slope_down）──
+  if(tm.type==='slope_down'){
+    if(!ds||!ds.length) return {valid:true, cls:'b-rand', label:'⬇ 下り坂（坂区間未入力）', pri:41};
+    const hit = ds.some(([s,e])=>ls>=s&&ls<=e);
+    return hit
+      ? {valid:true,  cls:'b-slope',  label:'⬇ 下り坂（有効）', pri:11}
+      : {valid:false, cls:'b-slopex', label:'⬇ 下り坂（無効）', pri:93};
+  }
+
+  // ── 坂スキル（slope_up）──
+  if(tm.type==='slope_up'){
+    if(!us||!us.length) return {valid:true, cls:'b-rand', label:'⛰ 上り坂（坂区間未入力）', pri:40};
+    const hit = us.some(([s,e])=>ls>=s&&ls<=e);
+    return hit
+      ? {valid:true,  cls:'b-slope',  label:'⛰ 上り坂（有効）', pri:10}
+      : {valid:false, cls:'b-slopex', label:'⛰ 上り坂（無効）', pri:92};
+  }
+
+  // ── 坂スキル（slope_up_later_half）= レース後半の上り坂 ──
+  // ls地点が上り坂区間内 → 最速/準速（slope_upと同等）
+  // ls以外にも上り坂区間が存在する → ランダム有効（他の坂でも発動可能性）
+  if(tm.type==='slope_up_later_half'){
+    if(!us||!us.length) return {valid:true, cls:'b-rand', label:'⛰ 上り坂・後半（坂区間未入力）', pri:40};
+    const lsHit = us.some(([s,e])=>ls>=s&&ls<=e);
+    if(lsHit) return {valid:true, cls:'b-slope', label:'⛰ 上り坂・後半（有効）', pri:10};
+    // ls地点以外に坂があるか（後半=ls以降の坂）
+    const otherHit = us.some(([s,e])=>e>ls);
+    if(otherHit) return {valid:true, cls:'b-rand', label:'⛰ 上り坂・後半（ランダム有効）', pri:25};
+    return {valid:false, cls:'b-slopex', label:'⛰ 上り坂・後半（無効）', pri:92};
+  }
+
+  // ── ランダムタイミング ──
+  if(tm.type==='random'){
+    const sub=tm.subtype;
+
+    // remain_range: remain_distance >= X かつ phase>=2
+    // ls地点での残り距離 = distance-ls。それがX以上ならls発動可能（最速）
+    // X以上でなければ distance-X 地点で発動（offsetを計算）
+    if(sub==='remain_range'){
+      const rv = tm.rv || 600; // デフォルト600m
+      const remainAtLs = distance - ls;
+      if(remainAtLs >= rv){
+        return {valid:true, cls:'b-fast', label:`最速発動 (ls時点残り${Math.round(remainAtLs)}m≥${rv}m)`, pri:0};
+      } else {
+        const fp = distance - rv;
+        const off = fp - ls;
+        const base = judgeOffset(off);
+        base.label = base.label.replace('発動', `発動 (残り${rv}m条件)`);
+        return base;
+      }
+    }
+
+    // remain_lte: remain_distance <= X → 最早発動地点 = distance-X
+    if(sub==='remain_lte'){
+      const rv = tm.rv || 0;
+      const fp = distance - rv;
+      const off = fp - ls;
+      const base = judgeOffset(off);
+      base.label = base.label.replace('発動', `発動 (残り${rv}m以下)`);
+      return base;
+    }
+
+    const MAP = {
+      fq:                {label:'ランダム有効（終盤前¼）',      pri:20},
+      fh:                {label:'ランダム有効（終盤前半）',      pri:21},
+      phase2:            {label:'ランダム有効（終盤全般）',      pri:22},
+      finalcorner_random:{label:'ランダム有効（最終コーナー）',  pri:23},
+      finalcorner_lh:    {label:'ランダム有効（最終コーナー後半）',pri:24},
+      all_corner:        {label:'ランダム有効（コーナー）',      pri:25},
+      straight_random:   {label:'ランダム有効（直線）',          pri:26},
+      after50:           {label:'ランダム有効（50%以降）',       pri:27},
+      dist_rate_after:   {label:'ランダム有効（後半）',          pri:27},
+      dist_rate_range:   {label:'ランダム有効（後半区間）',      pri:28},
+      lh:                {label:'ランダム有効（中盤後半）',      pri:29},
+      other:             {label:'ランダム有効（その他）',         pri:35},
+    };
+    const info=MAP[sub];
+    if(info) return {valid:true, cls:'b-rand', label:info.label, pri:info.pri};
+    return {valid:true, cls:'b-rand', label:'ランダム有効', pri:36};
+  }
+
+  return {valid:false, cls:'b-inv', label:'判定不能', pri:99};
+}
+
+/* ────────────────────────────────
+   FILTER
+──────────────────────────────── */
+function matches(s, dist, dt, gt, gc, mv, tids){
+  // exclude タイプは表示しない
+  if(s.tm.type==='exclude') return false;
+  if(s.dt&&s.dt.length&&!s.dt.includes(dt)) return false;
+  if(s.gt&&s.gt.length&&!s.gt.includes(gt)) return false;
+  if(s.gc&&s.gc.length&&!s.gc.includes(gc)) return false;
+  if(mv!==null&&s.mv&&mv<s.mv) return false;
+  if(s.track&&s.track.length&&!s.track.some(t=>tids.includes(t))) return false;
+  if(s.cd_ge!=null&&dist<s.cd_ge) return false;
+  if(s.cd_le!=null&&dist>s.cd_le) return false;
+  if(s.cd_eq&&s.cd_eq.length&&!s.cd_eq.includes(dist)) return false;
+  // レア度フィルター (rar=4と5は同じ「固有」として扱う)
+  if(rarFilter.size>0){
+    const r = s.rar||1;
+    const rNorm = (r === 5) ? 4 : r; // 5→4に正規化
+    if(!rarFilter.has(rNorm)) return false;
+  }
+  return true;
+}
+
+/* ────────────────────────────────
+   ORDER RANK DISPLAY
+──────────────────────────────── */
+function rankDisplay(raw){
+  if(!raw) return {cr:'—',lr:'—'};
+  const segs=(raw||'').split('@');
+  const cr=new Set(), lr=new Set();
+  segs.forEach(seg=>{
+    const le=seg.match(/order_rate<=(\d+)/), ge=seg.match(/order_rate>=(\d+)/);
+    const ord=seg.match(/\border==(\d+)\b/);
+    if(ord){ cr.add(ord[1]+'位'); lr.add(ord[1]+'位'); }
+    else if(le&&ge){
+      const lo=parseInt(ge[1]),hi=parseInt(le[1]);
+      cr.add(`${Math.ceil(lo/100*9)}〜${Math.ceil(hi/100*9)}位`);
+      lr.add(`${Math.ceil(lo/100*12)}〜${Math.ceil(hi/100*12)}位`);
+    } else if(le){
+      const v=parseInt(le[1]);
+      cr.add(`${Math.ceil(v/100*9)}位以内`); lr.add(`${Math.ceil(v/100*12)}位以内`);
+    } else if(ge){
+      const v=parseInt(ge[1]);
+      const c=9-Math.floor(v/100*9), l=12-Math.floor(v/100*12);
+      if(c>0) cr.add(c+'位以降'); if(l>0) lr.add(l+'位以降');
+    }
+  });
+  return {
+    cr:[...cr].join(' / ')||'—',
+    lr:[...lr].join(' / ')||'—'
+  };
 }
 
 /* ────────────────────────────────
    SEARCH
 ──────────────────────────────── */
 function doSearch(){
-  const dist = parseInt(document.getElementById('distSel').value);
+  clearErr();
+  const dist  = parseInt(document.getElementById('distSel').value)||0;
+  const gt    = getSel('gt');
+  const gc    = getSel('gc');
+  const mv    = mvVal;
   const venue = document.getElementById('venueSel').value;
-  const ls = parseFloat(document.getElementById('manLS').value);
-  const fc = parseFloat(document.getElementById('manFC').value);
-  const fs = parseFloat(document.getElementById('manFS').value);
 
-  let hasErr = false;
-  if(!dist){ document.getElementById('e-dist').classList.add('show'); document.getElementById('distSel').classList.add('err-ring'); hasErr=true; }
-  if(!g_gt){ document.getElementById('e-gt').classList.add('show'); hasErr=true; }
-  if(!g_gc){ document.getElementById('e-gc').classList.add('show'); hasErr=true; }
-  if(!venue){ document.getElementById('e-venue').classList.add('show'); document.getElementById('venueSel').classList.add('err-ring'); hasErr=true; }
-  if(isNaN(ls)){ document.getElementById('manLS').classList.add('err-ring'); hasErr=true; }
-  if(hasErr) return;
+  let ok=true;
+  if(!dist)  { showErr('e-dist','distSel'); ok=false; }
+  if(!gt)    { showErr('e-gt',null); ok=false; }
+  if(!gc)    { showErr('e-gc',null); ok=false; }
+  if(!venue) { showErr('e-venue','venueSel'); ok=false; }
+  if(!ok) return;
 
-  document.getElementById('warnBox').classList.toggle('show', (isNaN(fc) || isNaN(fs)));
+  const dt = getDistType(dist);
+  const tids = VENUE_TRACKS[venue]||[];
 
-  const up = Array.from(document.getElementById('upRows').querySelectorAll('.srow')).map(row => {
-    const ins = row.querySelectorAll('input'); return [parseFloat(ins[0].value), parseFloat(ins[1].value)];
-  }).filter(r => !isNaN(r[0]) && !isNaN(r[1]));
-  
-  const dn = Array.from(document.getElementById('dnRows').querySelectorAll('.srow')).map(row => {
-    const ins = row.querySelectorAll('input'); return [parseFloat(ins[0].value), parseFloat(ins[1].value)];
-  }).filter(r => !isNaN(r[0]) && !isNaN(r[1]));
+  // コース情報
+  const manLS = parseFloat(document.getElementById('manLS').value);
+  const manFC = parseFloat(document.getElementById('manFC').value);
+  const manFS = parseFloat(document.getElementById('manFS').value);
+  const upS   = getSlopes('up');
+  const dnS   = getSlopes('dn');
 
-  const ctx = { dist, gt: g_gt, gc: g_gc, mv: mvVal, venue, ls, fc, fs, up, dn };
-  const results = SKILLS.filter(s => checkSkill(s, ctx)).map(s => {
-    return { ...s, res: judgeTiming(s, ctx) };
+  const preIdx = document.getElementById('presetSel').value;
+  const raceBase = preIdx!=='' ? RACES[parseInt(preIdx)] : {};
+
+  const rc = {
+    distance: dist,
+    ls: !isNaN(manLS) ? manLS : (raceBase.ls||Math.floor(dist*2/3)),
+    fc: !isNaN(manFC) ? manFC : (raceBase.fc||null),
+    fs: !isNaN(manFS) ? manFS : (raceBase.fs||null),
+    us: upS.length ? upS : (raceBase.us||[]),
+    ds: dnS.length ? dnS : (raceBase.ds||[]),
+    gt, venue, name: raceBase.name||''
+  };
+
+  // フィルタ＋判定
+  const rows=[];
+  SKILLS.forEach(s=>{
+    if(!matches(s,dist,dt,gt,gc,mv,tids)) return;
+    const res=calcResult(s.tm, rc);
+    rows.push({...s, res});
   });
 
-  results.sort((a,b) => {
-    if(a.res.valid !== b.res.valid) return b.res.valid ? 1 : -1;
-    return (b.qty * (b.dur/10000)) - (a.qty * (a.dur/10000));
+  // ソート: (1)有効→無効 (2)判定優先度pri (3)効果量qty降順 (4)スキル名50音順
+  rows.sort((a,b)=>{
+    if(a.res.valid!==b.res.valid) return a.res.valid?-1:1;
+    if(a.res.pri!==b.res.pri) return a.res.pri-b.res.pri;
+    if((b.qty||0)!==(a.qty||0)) return (b.qty||0)-(a.qty||0);
+    return a.n.localeCompare(b.n,'ja');
   });
 
-  renderResults(results);
-  renderChips(ctx);
+  const validCnt=rows.filter(r=>r.res.valid).length;
+  document.getElementById('resCnt').textContent=validCnt;
+  document.getElementById('resTot').textContent=`（全${rows.length}件中）`;
+
+  // チップ
+  const chipsEl=document.getElementById('chips');
+  chipsEl.innerHTML='';
+  const ac=(t)=>{ const d=document.createElement('div'); d.className='chip'; d.textContent=t; chipsEl.appendChild(d); };
+  ac(`${dist}m（${DT_LABEL[dt]}）`);
+  ac(GT_LABEL[gt]);
+  ac(GC_LABEL[gc]);
+  if(mv) ac(MV_LABEL[mv]);
+  ac(`📍${venue}`);
+  if(rc.name) ac(`🏟${rc.name}`);
+  ac(`ls=${rc.ls}m`);
+  if(rc.fc) ac(`fc=${rc.fc}m`);
+  if(rc.fs) ac(`fs=${rc.fs}m`);
+
+  // 警告
+  const needFC=rows.some(r=>r.tm.fixed_point==='finalcorner');
+  const needFS=rows.some(r=>r.tm.fixed_point==='finalstraight'||r.tm.subtype==='finalstraight');
+  const wb=document.getElementById('warnBox');
+  wb.classList.toggle('show',(needFC&&!rc.fc)||(needFS&&!rc.fs));
+
+  render(rows);
 }
 
-function clearErr(){
-  document.querySelectorAll('.err').forEach(e=>e.classList.remove('show'));
-  document.querySelectorAll('.err-ring').forEach(e=>e.classList.remove('err-ring'));
-}
-
-/* ────────────────────────────────
-   JUDGE LOGIC
-──────────────────────────────── */
-function checkSkill(s, ctx){
-  const {dist, gt, gc, mv, venue} = ctx;
-  const tids = PRESETS.filter(p=>p.v===venue&&p.dt===dist&&p.gt===gt).map(p=>p.id);
-
-  if(s.dt && s.dt.length && !s.dt.includes(dist)) return false;
-  if(s.gt && s.gt.length && !s.gt.includes(gt)) return false;
-  if(s.gc && s.gc.length && !s.gc.includes(gc)) return false;
-  if(mv !== null && s.mv && mv < s.mv) return false;
-  if(s.track && s.track.length && !s.track.some(t => tids.includes(t))) return false;
-  if(s.cd_ge != null && dist < s.cd_ge) return false;
-  if(s.cd_le != null && dist > s.cd_le) return false;
-  if(s.cd_eq && s.cd_eq.length && !s.cd_eq.includes(dist)) return false;
-
-  // レア度フィルター (rar=4と5は同じ「固有」として扱う)
-  if(rarFilter.size > 0){
-    const r = s.rar || 1;
-    const rNorm = (r === 5) ? 4 : r; // 5を4に正規化して判定
-    if(!rarFilter.has(rNorm)) return false;
-  }
-  return true;
-}
-
-function judgeTiming(s, ctx){
-  const {ls, fc, fs, up, dn} = ctx;
-  const tm = s.tm;
-  if(!tm) return {label:'判定不可', cls:'b-inv', valid:false};
-
-  if(tm.type==='always') return {label:'常時有効', cls:'b-always', valid:true};
-
-  if(tm.type==='fixed'){
-    let p = 0;
-    if(tm.subtype==='ls') p = ls;
-    else if(tm.subtype==='finalcorner') p = fc;
-    else if(tm.subtype==='finalstraight') p = fs;
-    
-    if(isNaN(p)) return {label:'データ不足', cls:'b-inv', valid:false};
-    const diff = p - ls;
-    if(diff < -5) return {label:'無効', cls:'b-inv', valid:false};
-    if(diff <= 5) return {label:'最速', cls:'b-fast', valid:true};
-    if(diff <= 25) return {label:'準速', cls:'b-semi', valid:true};
-    return {label:'無効(遅)', cls:'b-inv', valid:false};
-  }
-
-  if(tm.type==='random'){
-    const sub = tm.subtype;
-    if(sub==='phase2' || sub==='fh' || sub==='fq' || sub==='straight_random' || sub==='finalcorner_random'){
-      return {label:'ランダム', cls:'b-rand', valid:true};
-    }
-    return {label:'ランダム', cls:'b-rand', valid:true};
-  }
-
-  if(tm.type==='slope_up' || tm.type==='slope_down'){
-    const ranges = (tm.type==='slope_up' ? up : dn);
-    if(!ranges || ranges.length===0) return {label:'坂なし', cls:'b-slopex', valid:false};
-    const isValid = ranges.some(r => r[1] > ls - 10);
-    return isValid ? {label:'坂(有効)', cls:'b-slope', valid:true} : {label:'坂(無効)', cls:'b-slopex', valid:false};
-  }
-
-  return {label:'要確認', cls:'b-inv', valid:false};
-}
-
-/* ────────────────────────────────
-   RENDER
-──────────────────────────────── */
-function renderResults(rows){
+function render(rows) {
   const container = document.getElementById('resBody');
-  document.getElementById('resCnt').textContent = rows.filter(r=>r.res.valid).length;
-  document.getElementById('resTot').textContent = `/ 全 ${rows.length} 件`;
-
-  if(rows.length===0){
-    container.innerHTML = '<div class="no-res">該当する有効加速スキルは見つかりませんでした</div>';
+  if (rows.length === 0) {
+    container.innerHTML = '<div class="no-res">該当するスキルが見つかりませんでした。</div>';
     return;
   }
 
-  // レア度 4 と 5 を「固有」に統一
-  const rarMap = {
-    1: {label:'白',   cls:'rar-w'},
-    2: {label:'金',   cls:'rar-g'},
+  let html = '<table><thead><tr><th>スキル名</th><th>レア度</th><th>効果量</th><th>効果 / 発動条件</th><th>判定</th></tr></thead><tbody>';
+
+  const RAR_INFO = {
+    1: {label:'白', cls:'rar-w'},
+    2: {label:'金', cls:'rar-g'},
     3: {label:'固有下', cls:'rar-ub'},
-    4: {label:'固有',  cls:'rar-u'},
-    5: {label:'固有',  cls:'rar-u'}, // レア度5を追加
-    6: {label:'進化',  cls:'rar-e'},
+    4: {label:'固有', cls:'rar-u'},
+    5: {label:'固有', cls:'rar-u'},
+    6: {label:'進化', cls:'rar-e'},
   };
 
-  let html = '<table><thead><tr><th>スキル名</th><th style="text-align:center">レア度</th><th style="text-align:center">加速量</th><th>効果 / 条件</th><th>判定</th></tr></thead><tbody>';
-  
   rows.forEach(r => {
     const trCls = r.res.valid ? '' : 'invalid';
-    const rar = rarMap[r.rar] || rarMap[1];
-    const accValue = (r.qty / 10000).toFixed(2);
-    const rarBadge = `<span class="rar-badge ${rar.cls}">${rar.label}</span>`;
+    
+    let accValue = '-';
+    if (r.qty !== undefined && r.qty !== null) {
+      accValue = (r.qty / 10000).toFixed(2); 
+    }
+
+    const ri = RAR_INFO[r.rar] || {label:'?', cls:'rar-w'};
+    const rarBadge = `<span class="rar-badge ${ri.cls}">${ri.label}</span>`;
     
     html += `
       <tr class="${trCls}">
         <td><div class="c-name">${r.n}</div></td>
         <td style="text-align:center;">${rarBadge}</td>
-        <td style="text-align:center; font-family:var(--mono); color:var(--cyan); font-weight:bold;">${accValue}</td>
+        <td style="text-align:center; font-family:'Share Tech Mono', monospace; color:var(--cyan); font-weight:bold;">
+          ${accValue}
+        </td>
         <td><div class="c-eff">${r.e}</div></td>
         <td><span class="badge ${r.res.cls}">${r.res.label}</span></td>
       </tr>`;
@@ -801,22 +969,29 @@ function renderResults(rows){
   html += '</tbody></table>';
   container.innerHTML = html;
 }
-
-function renderChips(ctx){
-  const c = document.getElementById('chips');
-  c.innerHTML = '';
-  const add = (txt) => {
-    const s = document.createElement('span'); s.className='chip'; s.textContent=txt; c.appendChild(s);
-  };
-  const dts = {1:'短距離', 2:'マイル', 3:'中距離', 4:'長距離'}[ctx.dist];
-  const gts = {1:'芝', 2:'ダート'}[ctx.gt];
-  const gcs = {1:'良', 2:'稍重', 3:'重', 4:'不良'}[ctx.gc];
-  add(ctx.venue); add(dts); add(gts); add(gcs);
-  if(ctx.mv) add(['','絶不調','不調','普通','好調','絶好調'][ctx.mv]);
-}
-
+/* ────────────────────────────────
+   RESET
+──────────────────────────────── */
 function resetAll(){
-  location.reload();
+  document.getElementById('presetSel').value='';
+  document.getElementById('distSel').value='';
+  document.getElementById('venueSel').value='';
+  ['manLS','manFC','manFS'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('upRows').innerHTML='';
+  document.getElementById('dnRows').innerHTML='';
+  uCnt=0; dCnt=0;
+  mvVal=null;
+  rarFilter = new Set();
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('chips').innerHTML='';
+  document.getElementById('resCnt').textContent='—';
+  document.getElementById('resTot').textContent='';
+  document.getElementById('warnBox').classList.remove('show');
+  clearErr();
+  document.getElementById('resBody').innerHTML=`<div class="empty">
+<div class="empty-icon">🏇</div>
+<p><b>距離・バ場・バ場状態・レース場</b>を選択して<br>検索ボタンを押してください</p>
+</div>`;
 }
 </script>
 </body>
