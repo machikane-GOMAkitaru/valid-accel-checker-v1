@@ -326,11 +326,26 @@ tr.invalid { opacity: .2; }
 
 /* Responsive */
 @media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; padding: 8px; }
-  .lpanel { position: static; max-height: none; }
-  .h-tags { display: none; }
-}
-</style>
+  table {
+    min-width: 100%;
+  }
+  .c-name {
+    min-width: 80px;
+    font-size: 11px;
+  }
+  .c-eff {
+    min-width: 100px;
+    max-width: none;
+    font-size: 10px;
+    word-break: break-all;
+  }
+
+  td, th {
+    padding: 6px 4px;
+  }
+
+  /* 例: th:nth-child(2), td:nth-child(2) { display: none; } */
+}</style>
 </head>
 <body>
 
