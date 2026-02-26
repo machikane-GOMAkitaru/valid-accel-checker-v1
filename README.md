@@ -2,7 +2,13 @@
 <p>ウマ娘 プリティーダービーにおける、各スキルの「有効加速」としての期待値を可視化・判定する有志作成のシミュレーションツールです。</p><br>
 [👉 <a href="https://machikane-gomakitaru.github.io/valid-accel-checker-v1/">ツールを利用する</a>]<br><br>
 
-[📜 <a href="https://github.com/machikane-GOMAkitaru/valid-accel-checker-v1/blob/main/valid_accel_spec_v3-2.pdf">仕様書を見てみる(開発者向け)</a>]
+[📘 <a href="https://github.com/machikane-GOMAkitaru/valid-accel-checker-v1/blob/main/valid_accel_spec_v3-2.pdf">仕様書を見てみる(開発者向け)</a>]<br><br>
+
+[💬 <a href="https://github.com/machikane-GOMAkitaru/valid-accel-checker-v1/issues/1">不具合報告・お喜びの声の受付</a>]
+
+
+
+
 <br><br>
 <h2>📌 はじめに</h2>
 <p>本ツールは<b>「ベータ版」</b>です。<br><br>
@@ -66,7 +72,9 @@ SA（継承）: これを改造して作ったものも、同じこのルール�
 ▼Twitter<br>
 https://x.com/zeikomi425yen<br><br>
 ▼マシュマロ（匿名質問箱）<br>
-https://marshmallow-qa.com/2npi1n6qltqta9v?t=LsGZoz&utm_medium=url_text&utm_source=promotion</p>
-<br>
+https://marshmallow-qa.com/2npi1n6qltqta9v?t=LsGZoz&utm_medium=url_text&utm_source=promotion<br>
+▼ISSUE（GitHubの掲示板）<br>
+<a href="https://github.com/machikane-GOMAkitaru/valid-accel-checker-v1/issues/1">CONTACT-machikane-GOMAkitaru/valid-accel-checker-v1</a></p>
+
 © 2026 有志開発チーム (仮)
 本ツールは「ウマ娘 プリティーダービー」公式とは一切関係ありません。
