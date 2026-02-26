@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>有効加速チェッカー | ウマ娘プリティダービー</title>
+<title>有効加速チェッカー v3.3 | ウマ娘プリティダービー</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Share+Tech+Mono&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -348,6 +348,7 @@ tr.invalid { opacity: .2; }
   font-family:var(--mono); font-size:8px; padding:1px 5px;
   border-radius:3px; white-space:nowrap;
 }
+.ct-rrw{ background:rgba(220,210,60,.1);  border:1px solid rgba(220,210,60,.25);  color:#c8b820; }
 .ct-rr { background:rgba(232,144,64,.1); border:1px solid rgba(232,144,64,.25); color:#e89040; }
 .ct-rv { background:rgba(232,80,80,.1);  border:1px solid rgba(232,80,80,.25);  color:#e85050; }
 .c-chara {
@@ -378,7 +379,7 @@ tr.invalid { opacity: .2; }
     <div class="h-sep"></div>
     <div class="h-tags">
       <span class="h-tag ht-g">効果コード31 加速スキル</span>
-      <span class="h-tag ht-c">不確実性スコア分析 v3.0</span>
+      <span class="h-tag ht-c">不確実性スコア分析 v3.3</span>
     </div>
     <div class="h-right">
       <div class="db-badge">DB: <b id="dbCnt">—</b> スキル</div>
@@ -1596,8 +1597,47 @@ function onDistChange(){
 
 
 /* ────────────────────────────────
-   TIMING LOGIC v3
+   UNCERTAINTY SCORING
 ──────────────────────────────── */
+// レース運び条件(弱)に分類された内部変数
+const RR_WEAK_VARS = new Set([
+  'infront_near_lane_time',
+  'behind_near_lane_time'
+]);
+
+// 固定条件に再分類された内部変数（rrフィールドに含まれていてもスコア加算しない）
+const FIXED_RR_VARS = new Set([
+  'hp_per',
+  'order',
+  'order_rate'
+]);
+
+// 固定条件に再分類された内部変数（rvフィールド側）
+const FIXED_RV_VARS = new Set([
+  'popularity'
+]);
+
+// スキルのuncを新スコアリングで動的計算
+function calcUnc(s) {
+  let score = 0;
+  // ランダム条件 +4（固定条件に再分類されたものは除外）
+  (s.rv || []).forEach(v => {
+    if (!FIXED_RV_VARS.has(v)) score += 4;
+  });
+  // レース運び条件 or (弱) or 固定条件の分類
+  (s.rr || []).forEach(v => {
+    if (FIXED_RR_VARS.has(v)) {
+      score += 0; // 固定条件 ±0
+    } else if (RR_WEAK_VARS.has(v)) {
+      score += 1; // レース運び条件(弱) +1
+    } else {
+      score += 2; // レース運び条件 +2
+    }
+  });
+  return score;
+}
+
+
 
 function judgeOffset(off, label_suffix) {
   const suf = label_suffix ? ' ' + label_suffix : '';
@@ -1907,7 +1947,7 @@ function doSearch(){
   // ソート: (1)タイミングpri昇順 (2)不確実性unc昇順 (3)効果量qty降順 (4)スキル名50音順
   rows.sort((a,b)=>{
     if(a.res.pri!==b.res.pri) return a.res.pri-b.res.pri;
-    const ua=a.unc||0, ub=b.unc||0;
+    const ua=calcUnc(a), ub=calcUnc(b);
     if(ua!==ub) return ua-ub;
     if((b.qty||0)!==(a.qty||0)) return (b.qty||0)-(a.qty||0);
     return a.n.localeCompare(b.n,'ja');
@@ -1949,9 +1989,9 @@ function render(rows) {
 
   function uncInfo(unc) {
     if (unc === 0) return {cls:'u-zero', label:'確定'};
-    if (unc <= 1)  return {cls:'u-low',  label:'低'};
-    if (unc <= 2)  return {cls:'u-mid',  label:'中'};
-    if (unc <= 3)  return {cls:'u-high', label:'高'};
+    if (unc <= 2)  return {cls:'u-low',  label:'低'};
+    if (unc <= 4)  return {cls:'u-mid',  label:'中'};
+    if (unc <= 6)  return {cls:'u-high', label:'高'};
     return              {cls:'u-vhigh', label:'最高'};
   }
 
@@ -1966,8 +2006,9 @@ function render(rows) {
     <span style="color:var(--border2)">▶</span> 不確実性スコア昇順
     <span style="color:var(--border2)">▶</span> 効果量降順
     &nbsp;&nbsp;
-    <span class="ct-rr" style="padding:1px 5px;border-radius:3px">橙</span> レース運び条件（+1）
-    <span class="ct-rv" style="padding:1px 5px;border-radius:3px">赤</span> ランダム条件（+3）
+    <span class="ct-rrw" style="padding:1px 5px;border-radius:3px">黄</span> レース運び条件(弱)（+1）
+    <span class="ct-rr" style="padding:1px 5px;border-radius:3px">橙</span> レース運び条件（+2）
+    <span class="ct-rv" style="padding:1px 5px;border-radius:3px">赤</span> ランダム条件（+4）
   </div>`;
 
   let html = sortExpl + '<table><thead><tr>'
@@ -1980,17 +2021,25 @@ function render(rows) {
     let accValue = '-';
     if (r.qty != null) accValue = (r.qty / 10000).toFixed(2);
     const ri = RAR_INFO[r.rar] || {label:'?', cls:'rar-w'};
-    const unc = r.unc || 0;
+    const unc = calcUnc(r);
     const ui = uncInfo(unc);
     const rr = r.rr || [];
     const rv = r.rv || [];
 
     let condHtml = '';
     if (rr.length || rv.length) {
-      condHtml = '<div class="cond-tags">';
-      rr.forEach(v => { condHtml += `<span class="cond-tag ct-rr">${v}</span>`; });
-      rv.forEach(v => { condHtml += `<span class="cond-tag ct-rv">${v}</span>`; });
-      condHtml += '</div>';
+      let tags = '';
+      rr.forEach(v => {
+        if (FIXED_RR_VARS.has(v)) {
+          // 固定条件はタグ非表示（スコア±0）
+        } else if (RR_WEAK_VARS.has(v)) {
+          tags += `<span class="cond-tag ct-rrw">${v}</span>`;
+        } else {
+          tags += `<span class="cond-tag ct-rr">${v}</span>`;
+        }
+      });
+      rv.forEach(v => { if (!FIXED_RV_VARS.has(v)) tags += `<span class="cond-tag ct-rv">${v}</span>`; });
+      if (tags) condHtml = '<div class="cond-tags">' + tags + '</div>';
     }
 
     // キャラクター名表示 (rar 3-6)
