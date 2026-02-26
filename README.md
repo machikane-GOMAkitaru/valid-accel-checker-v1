@@ -72,9 +72,9 @@ SA（継承）: これを改造して作ったものも、同じこのルール�
 ▼Twitter<br>
 https://x.com/zeikomi425yen<br><br>
 ▼マシュマロ（匿名質問箱）<br>
-https://marshmallow-qa.com/2npi1n6qltqta9v?t=LsGZoz&utm_medium=url_text&utm_source=promotion<br>
+https://marshmallow-qa.com/2npi1n6qltqta9v?t=LsGZoz&utm_medium=url_text&utm_source=promotion<br><br>
 ▼ISSUE（GitHubの掲示板）<br>
 <a href="https://github.com/machikane-GOMAkitaru/valid-accel-checker-v1/issues/1">CONTACT-machikane-GOMAkitaru/valid-accel-checker-v1</a></p>
-
+<br><br>
 © 2026 有志開発チーム (仮)
 本ツールは「ウマ娘 プリティーダービー」公式とは一切関係ありません。
