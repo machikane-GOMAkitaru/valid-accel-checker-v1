@@ -7,6 +7,9 @@
 [💬 <a href="https://github.com/machikane-GOMAkitaru/valid-accel-checker-v1/issues/1">不具合報告・お喜びの声の受付</a>]
 
 
+2026/2/28
+サンタアニタパーク / デルマーレース場追加
+関連のG1レースを追加
 
 
 <br><br>
